@@ -1,0 +1,9 @@
+﻿{
+   "Name": "TestMod",
+   "Author": "Fox536",
+   "Version": "0.1",
+   "Description": "Made to test Map Edits via SMAPI",
+   "UniqueID": "Fox536.TestMod",
+   "EntryDll": "TestMod.dll",
+   "UpdateKeys": []
+}
