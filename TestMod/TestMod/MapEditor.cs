@@ -4,82 +4,98 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using xTile.Layers;
 using xTile.Tiles;
 
 namespace TestMod.MapEditor
 {
 	public static class TreeArea
 	{
+		internal static ModEntry _this;
+
 		/*	Tile(int layer, int x, int y, int tileIndex)
-			Layer
-				0: Back
-				1: Buildings
-				2: Paths
-				3: Front
-				4: AlwaysFront */
+Layer
+0: Back
+1: Buildings
+2: Paths
+3: Front
+4: AlwaysFront */
 
 		public static void AddCenter(List<Tile> tileList, int startX, int startY)
 		{
 			// Back Grassy Edits
-			tileList.Add(new Tile(0, startX, startY, 200));
-			tileList.Add(new Tile(0, startX + 1, startY, 201));
-			tileList.Add(new Tile(0, startX + 2, startY, 203));
+			tileList.Add(new Tile(TLayer.Back, startX, startY, 200));
+			tileList.Add(new Tile(TLayer.Back, startX + 1, startY, 201));
+			tileList.Add(new Tile(TLayer.Back, startX + 2, startY, 203));
 
-			tileList.Add(new Tile(0, startX, startY + 1, 225));
-			tileList.Add(new Tile(0, startX + 1, startY + 1, 206));
-			tileList.Add(new Tile(0, startX + 2, startY + 1, 228));
+			tileList.Add(new Tile(TLayer.Back, startX, startY + 1, 225));
+			tileList.Add(new Tile(TLayer.Back, startX + 1, startY + 1, 206));
+			tileList.Add(new Tile(TLayer.Back, startX + 2, startY + 1, 228));
 
-			tileList.Add(new Tile(0, startX, startY + 2, 250));
-			tileList.Add(new Tile(0, startX + 1, startY + 2, 251));
-			tileList.Add(new Tile(0, startX + 2, startY + 2, 253));
+			tileList.Add(new Tile(TLayer.Back, startX, startY + 2, 250));
+			tileList.Add(new Tile(TLayer.Back, startX + 1, startY + 2, 251));
+			tileList.Add(new Tile(TLayer.Back, startX + 2, startY + 2, 253));
 		}
 
 		// Sidding
 		public static void AddLeftSide(List<Tile> tileList, int startX, int startY)
 		{
-			tileList.Add(new Tile(0, startX, startY, 228));
+			tileList.Add(new Tile(TLayer.Back, startX, startY, 228));
 		}
 		public static void AddRightSide(List<Tile> tileList, int startX, int startY)
 		{
-			tileList.Add(new Tile(0, startX, startY, 225));
+			tileList.Add(new Tile(TLayer.Back, startX, startY, 225));
 		}
 		public static void AddTopSide(List<Tile> tileList, int startX, int startY)
 		{
-			tileList.Add(new Tile(0, startX, startY, 251));
+			tileList.Add(new Tile(TLayer.Back, startX, startY, 251));
 		}
 		public static void AddBottomSide(List<Tile> tileList, int startX, int startY)
 		{
-			tileList.Add(new Tile(0, startX, startY, 201));
+			tileList.Add(new Tile(TLayer.Back, startX, startY, 201));
 		}
 
 		// Corners
 		public static void AddCornerTopLeft(List<Tile> tileList, int startX, int startY)
 		{
-			tileList.Add(new Tile(0, startX, startY, 178));
+			tileList.Add(new Tile(TLayer.Back, startX, startY, 178));
 		}
 		public static void AddCornerTopRight(List<Tile> tileList, int startX, int startY)
 		{
-			tileList.Add(new Tile(0, startX, startY, 252));
+			tileList.Add(new Tile(TLayer.Back, startX, startY, 252));
 		}
 		public static void AddCornerBottomLeft(List<Tile> tileList, int startX, int startY)
 		{
-			tileList.Add(new Tile(0, startX, startY, 177));
+			tileList.Add(new Tile(TLayer.Back, startX, startY, 177));
 		}
 		public static void AddCornerBottomRight(List<Tile> tileList, int startX, int startY)
 		{
-			tileList.Add(new Tile(0, startX, startY, 202));
+			tileList.Add(new Tile(TLayer.Back, startX, startY, 202));
 		}
 
 
 		public static void AddTurnLeftBottom(List<Tile> tileList, int startX, int startY)
 		{
-			tileList.Add(new Tile(0, startX, startY, 253));
+			tileList.Add(new Tile(TLayer.Back, startX, startY, 253));
 		}
 		
 
+		public static void AddTileSquare(List<Tile> tileList, int startX, int startY, int width, int height, int tileId, TLayer layer)
+		{
+			// Back Grassy Edits
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					tileList.Add(new Tile(layer, startX + x, startY+ y, tileId));
+				}
+			}
+		}
+
+		
 		public static void AddGrass(List<Tile> tileList, int startX, int startY)
 		{
-			tileList.Add(new Tile(0, startX, startY, 175));
+			tileList.Add(new Tile(TLayer.Back, startX, startY, 175));
 		}
 
 		public static void AddNoSpawn(List<Tile> tileList, List<int[]> noSpawnArea, GameLocation gl, int startX, int startY)
@@ -204,7 +220,7 @@ namespace TestMod.MapEditor
 			{
 				int x = noSpawnArea[i][0];
 				int y = noSpawnArea[i][1];
-				Game1.locations[1].setTileProperty(x, y, "AlwaysFront", "NoSpawn", "All");
+				Game1.locations[1].setTileProperty(x, y, "Back", "NoSpawn", "All");
 			}
 		}
 
@@ -212,19 +228,21 @@ namespace TestMod.MapEditor
 		{
 			foreach (Tile tile in tileArray)
 			{
+				Layer layer = gl.map.GetLayer(tile.Layername);
+
 				if (tile.tileIndex < 0)
 				{
-					gl.removeTile(tile.x, tile.y, tile.layer);
+					gl.removeTile(tile.x, tile.y, tile.Layername);
 					continue;
 				}
 
-				if (gl.map.Layers[tile.l].Tiles[tile.x, tile.y] == null)
+				if (layer.Tiles[tile.x, tile.y] == null)
 				{
-					gl.map.Layers[tile.l].Tiles[tile.x, tile.y] = new StaticTile(gl.map.GetLayer(tile.layer), gl.map.TileSheets[gl.map.TileSheets.Count-1], xTile.Tiles.BlendMode.Alpha, tile.tileIndex);
+					layer.Tiles[tile.x, tile.y] = new StaticTile(layer, gl.map.TileSheets[gl.map.TileSheets.Count-1], xTile.Tiles.BlendMode.Alpha, tile.tileIndex);
 				}
 				else
 				{
-					gl.setMapTileIndex(tile.x, tile.y, tile.tileIndex, tile.layer);
+					gl.setMapTileIndex(tile.x, tile.y, tile.tileIndex, layer.Id);
 				}
 			}
 		}

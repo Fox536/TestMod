@@ -1,16 +1,21 @@
 ﻿namespace TestMod
 {
+	public enum TLayer { Back, Buildings, Paths, Front, AlwaysFront }
+
 	public class Tile
 	{
-		public int l;
+		public TLayer l;
+		public string Layername;
 		public int x;
 		public int y;
 		public int tileIndex;
-		public string layer;
+		//public string layer;
 
-		public Tile(int l, int x, int y, int tileIndex)
+		public Tile(TLayer l, int x, int y, int tileIndex)
 		{
 			this.l = l; this.x = x; this.y = y; this.tileIndex = tileIndex;
+			Layername = l.ToString();
+			/*
 			switch (l)
 			{
 				case 0:
@@ -29,6 +34,7 @@
 					this.layer = "AlwaysFront";
 					break;
 			}
+			*/
 		}
 	}
 }
