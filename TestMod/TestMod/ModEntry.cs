@@ -8,20 +8,20 @@ using StardewValley;
 using xTile.Tiles;
 using xTile;
 using StardewValley.TerrainFeatures;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace TestMod
 {
 	/// <summary>The mod entry point.</summary>
 	public class ModEntry : Mod //, IAssetEditor
 	{
-        private string ModVersion = "0.04";
-		private ModConfig modConfig;
+        private	static string			ModVersion = "0.04";
+		private static ModConfig		modConfig;
+		private static Map				FarmMap;
+		private static bool				mapUpdated = false;
+		private static IMonitor			ModMonitor;
+		private static List<Vector2>	MineArea;
 
-		private static List<Tile> FarmEdit1 = new List<Tile>()
-		{
-
-		};
-        
 		/*********
         ** Public methods
         *********/
@@ -29,8 +29,6 @@ namespace TestMod
 		/// <param name="helper">Provides simplified APIs for writing mods.</param>
 		public override void Entry(IModHelper helper)
 		{
-
-
 			//or if you've created your own GameLocation object when you loaded your mod, just send that instead of referencing the Game1.locations array
 			/*
             //These are random made up examples
@@ -42,13 +40,13 @@ namespace TestMod
 			SaveEvents.AfterLoad += SaveEvents_AfterLoad;
 			SaveEvents.AfterSave += SaveEvents_AfterSave;
 			SaveEvents.AfterReturnToTitle += SaveEvents_AfterReturnToTitle;
+
 			TimeEvents.AfterDayStarted += TimeEvents_AfterDayStarted;
 
-
-			MapEditor.TreeArea._this = this;
-
-
 			ControlEvents.KeyPressed += this.ControlEvents_KeyPress;
+
+
+			ModMonitor = this.Monitor;
 		}
 		
 		/*********
@@ -61,12 +59,11 @@ namespace TestMod
 		{
 			if (Context.IsWorldReady) // save is loaded
 			{
-				//this.Monitor.Log($"{Game1.player.name} pressed {e.KeyPressed}.");
+				//print($"{Game1.player.name} pressed {e.KeyPressed}.");
 				if (e.KeyPressed == Microsoft.Xna.Framework.Input.Keys.F7)
-					this.Monitor.Log($"{Game1.player.currentLocation}, {Game1.player.getTileLocation()}, {Game1.player.FacingDirection}");
+					print($"{Game1.player.currentLocation}: {Game1.player.currentLocation.Name}, {Game1.player.getTileLocation()}, {Game1.player.FacingDirection}");
 			}
 		}
-
 		private void SaveEvents_AfterLoad(object sender, EventArgs e)
 		{
 			// Create/Read Config
@@ -91,6 +88,7 @@ namespace TestMod
 		{
 			// Clear Config
 			modConfig = null;
+			mapUpdated = false;
 		}
 		private void TimeEvents_AfterDayStarted(object sender, EventArgs e)
 		{
@@ -119,17 +117,6 @@ namespace TestMod
 				this.Helper.WriteJsonFile($"data/{Constants.SaveFolderName}.json", modConfig);
 		}
 		
-		private string GetSeasonTilemap()
-		{
-			this.Monitor.Log($"season: {Game1.currentSeason}");
-			return Game1.currentSeason;
-
-			return "summer";
-			return "spring";
-			return "fall";
-			return "winter";
-		}
-
 		/// <summary>
 		/// Adds the Map Edits
 		/// </summary>
@@ -138,65 +125,74 @@ namespace TestMod
 			if (Game1.locations[1] is Farm)
 			{
 				Farm farm = Game1.locations[1] as Farm;
-				farm.map = this.Helper.Content.Load<Map>(@"Content\Maps\Farm_Combat_Fox536.xnb", ContentSource.ModFolder);
-
-				string tilesheet = $"{GetSeasonTilemap()}_outdoorsTileSheet.xnb";
-				this.Monitor.Log($"Tileset Name: {tilesheet}, {ContentSource.GameContent}");
-				// ContentSource.GameContent
-				//Game1.locations[1].map.RemoveTileSheet(Game1.locations[1].map.TileSheets.Count-1);
-				//Game1.locations[1].map.AddTileSheet(this.Helper.Content.Load<TileSheet>($@"Content\Maps\{tilesheet}", ContentSource.GameContent));
-				int tileSheetIndex = farm.map.TileSheets.Count - 1;
-				farm.map.TileSheets[tileSheetIndex].ImageSource = this.Helper.Content.GetActualAssetKey(@"Content\Maps\" + tilesheet, ContentSource.ModFolder).ImageSource;
-				farm.map.LoadTileSheets(Game1.mapDisplayDevice);
-
-				this.Monitor.Log($"Tilesheet Count: {Game1.locations[1].map.TileSheets.Count}");
-
-
-				//this.Monitor.Log($"{FarmEdits.Count}");
-				this.Monitor.Log($"Adding Map Edits");
-
-				if (modConfig.AddTreeSector1)
-					AddSector1();
-
-				if (modConfig.AddTreeSector2)
-					AddSector2();
-
-				if (modConfig.AddTreeSector3)
-					AddSector3();
-
-				if (modConfig.AddTreeSector4)
-					AddSector4();
-
-				if (modConfig.AddTreeSector5)
-					AddSector5();
-
-				if (modConfig.AddTreeSector6)
-					AddSector6();
-
-				if (modConfig.AddTreeSector7)
-					AddSector7();
-
-				if (modConfig.AddTreeSector8)
-					AddSector8();
-
-				if (modConfig.AddTreeSector9)
-					AddSector9();
-
-				if (modConfig.AddMineArea)
-					AddMine();
-
-				//TestRemove();
-
-				this.Monitor.Log($"Finished Adding Tree Sectors");
-				//MapEditor.TreeArea.PatchMap(Game1.locations[1], tileEdits);
+				farm.seasonUpdate(Game1.currentSeason);
+				farm.Map.TileSheets[2].ImageSource = Game1.currentSeason + "_outdoorsTileSheet";
 			}
-			
+
+			if (!mapUpdated)
+			{
+				if (Game1.locations[1] is Farm)
+				{
+					print("Starting Map Override");
+					Farm farm = Game1.locations[1] as Farm;
+					FarmMap = this.Helper.Content.Load<Map>(@"Content\Maps\Farm_Combat_Fox536.xnb", ContentSource.ModFolder);
+					farm.Map = FarmMap;
+
+					for (int i = 0; i < farm.Map.TileSheets.Count; i++)
+					{
+						print($"{farm.Map.TileSheets[i]}, {farm.Map.TileSheets[i].Id}, {farm.Map.TileSheets[i].ImageSource}");
+					}
+
+					farm.seasonUpdate(Game1.currentSeason);
+					//farm.Map.LoadTileSheets(Game1.mapDisplayDevice);
+					farm.Map.TileSheets[2].ImageSource = Game1.currentSeason + "_outdoorsTileSheet";
+					//farm.Map.TileSheets[1].ImageSource = Game1.currentSeason
+
+					print($"Adding Map Edits");
+
+					if (modConfig.AddTreeSector1)
+						AddSector1();
+
+					if (modConfig.AddTreeSector2)
+						AddSector2();
+
+					if (modConfig.AddTreeSector3)
+						AddSector3();
+
+					if (modConfig.AddTreeSector4)
+						AddSector4();
+
+					if (modConfig.AddTreeSector5)
+						AddSector5();
+
+					if (modConfig.AddTreeSector6)
+						AddSector6();
+
+					if (modConfig.AddTreeSector7)
+						AddSector7();
+
+					if (modConfig.AddTreeSector8)
+						AddSector8();
+
+					if (modConfig.AddTreeSector9)
+						AddSector9();
+
+					if (modConfig.AddMineArea)
+						AddMine();
+					
+					print($"Finished Adding Tree Sectors");
+				}
+
+				// Prevent Another Update
+				mapUpdated = true;
+			}
 		}
-		
+
 		// Tree Sectors
+		#region TreeAreas
 		private void AddSector1()
 		{
-			this.Monitor.Log($"Adding Sector 1");
+			print($"Adding Sector 1");
 			// Variables
 			int startX = 69;
 			int startY = 74;
@@ -224,48 +220,47 @@ namespace TestMod
 		}
 		private void AddSector2()
 		{
-			this.Monitor.Log($"Adding Sector 2");
+			print($"Adding Sector 2");
 			MapEditor.TreeArea.FillSquareArea(52, 80, 4, 11, true, true, true, true, true, true, true, true);
 		}
 		private void AddSector3()
 		{
-			this.Monitor.Log($"Adding Sector 3");
+			print($"Adding Sector 3");
 			MapEditor.TreeArea.FillSquareArea(43, 70, 5, 1, false, false, false, false, false, false, false, false);
 		}
 		private void AddSector4()
 		{
-			this.Monitor.Log($"Adding Sector 4");
+			print($"Adding Sector 4");
 			MapEditor.TreeArea.FillSquareArea(34, 61, 3, 3, false, false, false, false, false, false, false, false);
 		}
-
-		// New Check for issues
 		private void AddSector5()
 		{
-			this.Monitor.Log($"Adding Sector 5");
+			print($"Adding Sector 5");
 			MapEditor.TreeArea.FillSquareArea(19, 67, 3, 1, false, false, false, false, false, false, false, false);
 		}
 		private void AddSector6()
 		{
-			this.Monitor.Log($"Adding Sector 6");
+			print($"Adding Sector 6");
 			MapEditor.TreeArea.FillSquareArea(81, 25, 3, 1, false, false, false, false, false, false, false, false);
 		}
 		private void AddSector7()
 		{
-			this.Monitor.Log($"Adding Sector 7");
+			print($"Adding Sector 7");
 			MapEditor.TreeArea.FillSquareArea(103, 27, 3, 4, false, false, false, false, false, false, false, false);
 			MapEditor.TreeArea.FillSquareArea(112, 33, 1, 2, false, false, false, false, false, false, false, false);
 		}
 		private void AddSector8()
 		{
-			this.Monitor.Log($"Adding Sector 8");
+			print($"Adding Sector 8");
 			MapEditor.TreeArea.FillSquareArea(104, 111, 5, 1, false, false, false, false, false, false, false, false);
 		}
 		private void AddSector9()
 		{
-			this.Monitor.Log($"Adding Sector 9");
+			print($"Adding Sector 9");
 			MapEditor.TreeArea.FillSquareArea(70, 41, 1, 3, false, false, false, false, false, false, false, false);
 		}
-
+		#endregion
+		#region MineArea
 		private void AddMine()
 		{
 			AddMineBack();
@@ -422,7 +417,8 @@ namespace TestMod
 			// Finalize Edits
 			MapEditor.TreeArea.PatchMap(Game1.locations[1], tileEdits);
 		}
-
+		#endregion
+		#region Mine Methods
 		/// <summary>
 		/// Adds Spawnable Objects
 		/// </summary>
@@ -437,8 +433,6 @@ namespace TestMod
 				}
 			}
 		}
-
-		List<Vector2> MineArea;
 		private void AddMineObjs(Farm farm)
 		{
 			// Create Mine Area if needed
@@ -598,7 +592,15 @@ namespace TestMod
 					return null;
 			}
 		}
+		#endregion
 
+		private static void print(string text)
+		{
+			if ((ModMonitor != null) && (modConfig.debug))
+			{
+				ModMonitor.Log(text);
+			}
+		}
 	}
 }
  

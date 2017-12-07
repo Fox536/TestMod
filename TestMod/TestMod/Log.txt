@@ -13,6 +13,8 @@ Updates
 Resolved Bugs
 	12/7/17
 		* Newgame Bug: Newgame no longer causes CTD
+		* Seasonal Tileset Issues: Fixed issue with seasonal tileset not being applied.
+
 
 Known Bugs
  * Returning to the title and loading another save cause CTD

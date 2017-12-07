@@ -5,6 +5,7 @@ namespace TestMod
 {
 	class ModConfig
 	{
+		public bool debug			{ get; set; } = false;
 		public bool AddTreeSector1	{ get; set; } = true;
 		public bool AddTreeSector2	{ get; set; } = true;
 		public bool AddTreeSector3	{ get; set; } = true;
