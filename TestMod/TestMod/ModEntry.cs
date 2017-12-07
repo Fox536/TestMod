@@ -15,12 +15,14 @@ namespace TestMod
 	/// <summary>The mod entry point.</summary>
 	public class ModEntry : Mod //, IAssetEditor
 	{
-        private	static string			ModVersion = "0.04";
+		#region Variables
+		private	static string			ModVersion = "0.04";
 		private static ModConfig		modConfig;
 		private static Map				FarmMap;
 		private static bool				mapUpdated = false;
 		private static IMonitor			ModMonitor;
 		private static List<Vector2>	MineArea;
+		#endregion
 
 		/*********
         ** Public methods
@@ -48,10 +50,11 @@ namespace TestMod
 
 			ModMonitor = this.Monitor;
 		}
-		
+
 		/*********
         ** Private methods
         *********/
+		#region Events
 		/// <summary>The method invoked when the player presses a keyboard button.</summary>
 		/// <param name="sender">The event sender.</param>
 		/// <param name="e">The event data.</param>
@@ -104,6 +107,7 @@ namespace TestMod
 
 			AddObjects();
 		}
+		#endregion
 
 		/// <summary>
 		/// Handles the Config Creation/Loading
