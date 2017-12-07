@@ -15,7 +15,7 @@ namespace TestMod
 		public bool AddTreeSector8	{ get; set; } = true;
 		public bool AddTreeSector9	{ get; set; } = true;
 
-		public bool AddMineArea		{ get; set; } = false;
+		public bool AddMineArea		{ get; set; } = true;
 
 		public int Mine_StartX	{ get; set; } = 6;
 		public int Mine_StartY	{ get; set; } = 104;

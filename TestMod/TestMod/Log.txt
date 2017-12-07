@@ -1,0 +1,24 @@
+
+Updates
+	(0.3) - 12/6/17
+		 * Added Spawn Points for Boulders in Config, still need to refine it a bit
+		 * Added checks for Mine Area and Spawning Ores
+		 * Edited map a bit more, to remove extra path points that get in the way
+		 * Changed the Map to load via Mod's Content folder, so as to remove the need to manually add the map to the Game's content folder
+	(0.2) - 12/5/17
+		* Finished Adding all the Tree Sections
+		* Added the Extra Mining Area
+		* Added a Config .json with plans to add a UI for the config later
+		* Updated the Tile and MapEditor Classes to allow for all other layers.
+Resolved Bugs
+	12/7/17
+		* Newgame Bug: Newgame no longer causes CTD
+
+Known Bugs
+ * Returning to the title and loading another save cause CTD
+	 
+Future Config Options
+ * A way to disable the mod via the config, so each save file can turn it on/off without disrupting other saves or having to install unistall
+ * Check to insure the current farm is using the combat_farm.xnb map
+
+

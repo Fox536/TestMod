@@ -14,45 +14,14 @@ namespace TestMod
 	/// <summary>The mod entry point.</summary>
 	public class ModEntry : Mod //, IAssetEditor
 	{
+        private string ModVersion = "0.04";
 		private ModConfig modConfig;
 
 		private static List<Tile> FarmEdit1 = new List<Tile>()
 		{
 
 		};
-
-		//Meticulously planned tile edits for Farm.xnb
-		/*Create array of custom tile objects with layer, x & y location, and new texture information
-            (-1 as a texture means set the tile to null) */
-			/*
-		private static List<Tile> FarmEdits = new List<Tile>()
-		{
-			new Tile(0, 0, 38, 175), new Tile(0, 1, 38, 175), new Tile(0, 0, 43, 537),
-			new Tile(0, 1, 43, 537), new Tile(0, 2, 43, 586), new Tile(0, 0, 44, 566),
-			new Tile(0, 1, 44, 537), new Tile(0, 2, 44, 618), new Tile(0, 0, 45, 587),
-			new Tile(0, 1, 45, 473), new Tile(0, 0, 46, 587), new Tile(0, 1, 46, 587),
-			new Tile(0, 0, 48, 175), new Tile(0, 1, 48, 175),
-
-			new Tile(TLayer.Buildings, 0, 39, 175), new Tile(1, 1, 39, 175), new Tile(1, 2, 39, 444),
-			new Tile(TLayer.Buildings, 0, 40, 446), new Tile(1, 1, 40, 468), new Tile(1, 2, 40, 469),
-			new Tile(TLayer.Buildings, 0, 41, 492), new Tile(1, 1, 41, 493), new Tile(1, 2, 41, 494),
-			new Tile(TLayer.Buildings, 0, 42, 517), new Tile(1, 1, 42, 518), new Tile(1, 2, 42, 519),
-			new Tile(1, 0, 43, 542), new Tile(1, 1, 43, 543), new Tile(1, 2, 43, 544),
-			new Tile(1, 0, 44, -1), new Tile(1, 1, 44, -1), new Tile(1, 2, 44, -1),
-			new Tile(1, 0, 45, -1), new Tile(1, 1, 45, -1), new Tile(1, 2, 45, -1),
-			new Tile(1, 0, 46, -1), new Tile(1, 1, 46, -1), new Tile(1, 2, 46, -1),
-			new Tile(1, 0, 47, 175), new Tile(1, 1, 47, 175), new Tile(1, 0, 48, -1),
-
-			new Tile(3, 0, 36, -1), new Tile(3, 1, 36, -1), new Tile(3, 0, 37, -1),
-			new Tile(3, 1, 37, -1), new Tile(3, 0, 38, -1), new Tile(3, 1, 38, -1),
-			new Tile(3, 0, 39, -1), new Tile(3, 1, 39, -1), new Tile(3, 0, 40, -1),
-			new Tile(3, 0, 41, -1), new Tile(3, 0, 46, 414), new Tile(3, 1, 46, 413),
-			new Tile(3, 2, 46, 438), new Tile(3, 0, 47, 175), new Tile(3, 1, 47, 175),
-			new Tile(3, 2, 47, 394)
-		};
-		*/
-
-
+        
 		/*********
         ** Public methods
         *********/
@@ -68,9 +37,7 @@ namespace TestMod
             Game1.locations[1].warps.Add(new Warp(64, 19, "Farm", 62, 23, false));
             Game1.locations[1].setTileProperty(63, 13, "Buildings", "Action", "Warp 64 18 Farm");
             */
-
-			//ModConfig config = helper.ReadConfig<ModConfig>();
-
+            
 			// Add Events
 			SaveEvents.AfterLoad += SaveEvents_AfterLoad;
 			SaveEvents.AfterSave += SaveEvents_AfterSave;
@@ -83,12 +50,7 @@ namespace TestMod
 
 			ControlEvents.KeyPressed += this.ControlEvents_KeyPress;
 		}
-
 		
-
-		
-		
-
 		/*********
         ** Private methods
         *********/
@@ -115,9 +77,15 @@ namespace TestMod
 		}
 		private void SaveEvents_AfterSave(object sender, EventArgs e)
 		{
-			// Save Config File
-			if (modConfig != null)
+			if (modConfig == null)
+			{
+				// Create/Read Config
+				CreateConfig();
+			}
+			else
+			{
 				this.Helper.WriteJsonFile($"data/{Constants.SaveFolderName}.json", modConfig);
+			}
 		}
 		private void SaveEvents_AfterReturnToTitle(object sender, EventArgs e)
 		{
@@ -151,53 +119,78 @@ namespace TestMod
 				this.Helper.WriteJsonFile($"data/{Constants.SaveFolderName}.json", modConfig);
 		}
 		
+		private string GetSeasonTilemap()
+		{
+			this.Monitor.Log($"season: {Game1.currentSeason}");
+			return Game1.currentSeason;
+
+			return "summer";
+			return "spring";
+			return "fall";
+			return "winter";
+		}
+
 		/// <summary>
 		/// Adds the Map Edits
 		/// </summary>
 		private void RunPatches()
 		{
-			Game1.locations[1].map = this.Helper.Content.Load<Map>(@"Content\Maps\Farm_Combat_Fox536.xnb", ContentSource.ModFolder);
+			if (Game1.locations[1] is Farm)
+			{
+				Farm farm = Game1.locations[1] as Farm;
+				farm.map = this.Helper.Content.Load<Map>(@"Content\Maps\Farm_Combat_Fox536.xnb", ContentSource.ModFolder);
 
-			this.Monitor.Log($"Tilesheet Count: {Game1.locations[1].map.TileSheets.Count}");
+				string tilesheet = $"{GetSeasonTilemap()}_outdoorsTileSheet.xnb";
+				this.Monitor.Log($"Tileset Name: {tilesheet}, {ContentSource.GameContent}");
+				// ContentSource.GameContent
+				//Game1.locations[1].map.RemoveTileSheet(Game1.locations[1].map.TileSheets.Count-1);
+				//Game1.locations[1].map.AddTileSheet(this.Helper.Content.Load<TileSheet>($@"Content\Maps\{tilesheet}", ContentSource.GameContent));
+				int tileSheetIndex = farm.map.TileSheets.Count - 1;
+				farm.map.TileSheets[tileSheetIndex].ImageSource = this.Helper.Content.GetActualAssetKey(@"Content\Maps\" + tilesheet, ContentSource.ModFolder).ImageSource;
+				farm.map.LoadTileSheets(Game1.mapDisplayDevice);
+
+				this.Monitor.Log($"Tilesheet Count: {Game1.locations[1].map.TileSheets.Count}");
 
 
-			//this.Monitor.Log($"{FarmEdits.Count}");
-			this.Monitor.Log($"Adding Map Edits");
+				//this.Monitor.Log($"{FarmEdits.Count}");
+				this.Monitor.Log($"Adding Map Edits");
 
-			if (modConfig.AddTreeSector1)
-				AddSector1();
+				if (modConfig.AddTreeSector1)
+					AddSector1();
 
-			if (modConfig.AddTreeSector2)
-				AddSector2();
+				if (modConfig.AddTreeSector2)
+					AddSector2();
 
-			if (modConfig.AddTreeSector3)
-				AddSector3();
+				if (modConfig.AddTreeSector3)
+					AddSector3();
 
-			if (modConfig.AddTreeSector4)
-				AddSector4();
+				if (modConfig.AddTreeSector4)
+					AddSector4();
 
-			if (modConfig.AddTreeSector5)
-				AddSector5();
+				if (modConfig.AddTreeSector5)
+					AddSector5();
 
-			if (modConfig.AddTreeSector6)
-				AddSector6();
+				if (modConfig.AddTreeSector6)
+					AddSector6();
 
-			if (modConfig.AddTreeSector7)
-				AddSector7();
+				if (modConfig.AddTreeSector7)
+					AddSector7();
 
-			if (modConfig.AddTreeSector8)
-				AddSector8();
+				if (modConfig.AddTreeSector8)
+					AddSector8();
 
-			if (modConfig.AddTreeSector9)
-				AddSector9();
+				if (modConfig.AddTreeSector9)
+					AddSector9();
 
-			if (modConfig.AddMineArea)
-				AddMine();
+				if (modConfig.AddMineArea)
+					AddMine();
 
-			//TestRemove();
+				//TestRemove();
 
-			this.Monitor.Log($"Finished Adding Tree Sectors");
-			//MapEditor.TreeArea.PatchMap(Game1.locations[1], tileEdits);
+				this.Monitor.Log($"Finished Adding Tree Sectors");
+				//MapEditor.TreeArea.PatchMap(Game1.locations[1], tileEdits);
+			}
+			
 		}
 		
 		// Tree Sectors
