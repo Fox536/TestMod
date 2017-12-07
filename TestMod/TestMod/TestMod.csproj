@@ -49,7 +49,13 @@
     <Compile Include="Tile.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Content %28Unpacked%29\Maps\Farm_Combat_Fox536.tbin" />
+    <None Include="Content %28Unpacked%29\Maps\Farm_Combat_Fox536.yaml" />
     <None Include="Content\Maps\Farm_Combat.xnb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\Maps\Farm_Combat.xnb.bak1" />
+    <None Include="Content\Maps\Farm_Combat_Fox536.xnb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="manifest.json" />

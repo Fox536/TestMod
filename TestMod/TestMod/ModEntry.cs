@@ -6,11 +6,13 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using xTile.Tiles;
+using xTile;
+using StardewValley.TerrainFeatures;
 
 namespace TestMod
 {
 	/// <summary>The mod entry point.</summary>
-	public class ModEntry : Mod
+	public class ModEntry : Mod //, IAssetEditor
 	{
 		private ModConfig modConfig;
 
@@ -79,7 +81,7 @@ namespace TestMod
 			MapEditor.TreeArea._this = this;
 
 
-			//ControlEvents.KeyPressed += this.ControlEvents_KeyPress;
+			ControlEvents.KeyPressed += this.ControlEvents_KeyPress;
 		}
 
 		
@@ -97,7 +99,9 @@ namespace TestMod
 		{
 			if (Context.IsWorldReady) // save is loaded
 			{
-				this.Monitor.Log($"{Game1.player.name} pressed {e.KeyPressed}.");
+				//this.Monitor.Log($"{Game1.player.name} pressed {e.KeyPressed}.");
+				if (e.KeyPressed == Microsoft.Xna.Framework.Input.Keys.F7)
+					this.Monitor.Log($"{Game1.player.currentLocation}, {Game1.player.getTileLocation()}, {Game1.player.FacingDirection}");
 			}
 		}
 
@@ -131,6 +135,8 @@ namespace TestMod
 				// Add Map Edits
 				RunPatches();
 			}
+
+			AddObjects();
 		}
 
 		/// <summary>
@@ -150,6 +156,8 @@ namespace TestMod
 		/// </summary>
 		private void RunPatches()
 		{
+			Game1.locations[1].map = this.Helper.Content.Load<Map>(@"Content\Maps\Farm_Combat_Fox536.xnb", ContentSource.ModFolder);
+
 			this.Monitor.Log($"Tilesheet Count: {Game1.locations[1].map.TileSheets.Count}");
 
 
@@ -183,14 +191,15 @@ namespace TestMod
 			if (modConfig.AddTreeSector9)
 				AddSector9();
 
+			if (modConfig.AddMineArea)
+				AddMine();
 
-			AddMine();
+			//TestRemove();
 
 			this.Monitor.Log($"Finished Adding Tree Sectors");
 			//MapEditor.TreeArea.PatchMap(Game1.locations[1], tileEdits);
 		}
-
-
+		
 		// Tree Sectors
 		private void AddSector1()
 		{
@@ -283,10 +292,14 @@ namespace TestMod
 			}
 
 			Game1.locations[1].setTileProperty(4, 97, "Back", "NPCBarrier", "T");
+			Game1.locations[1].setTileProperty(4, 97, "Back", "NoSpawn", "ALL");
+			
 			Game1.locations[1].setTileProperty(25, 116, "Back", "NPCBarrier", "T");
+			Game1.locations[1].setTileProperty(25, 116, "Back", "NoSpawn", "ALL");
 			for (int x = 0; x < width; x++)
 			{
-				Game1.locations[1].setTileProperty(4, 116, "Back", "NPCBarrier", "T");
+				Game1.locations[1].setTileProperty(4 + x, 116, "Back", "NPCBarrier", "T");
+				Game1.locations[1].setTileProperty(4 + x, 116, "Back", "NoSpawn", "ALL");
 			}
 		}
 		private void AddMineBack()
@@ -416,6 +429,183 @@ namespace TestMod
 			// Finalize Edits
 			MapEditor.TreeArea.PatchMap(Game1.locations[1], tileEdits);
 		}
+
+		/// <summary>
+		/// Adds Spawnable Objects
+		/// </summary>
+		private void AddObjects()
+		{
+			foreach (GameLocation GL in Game1.locations)
+			{
+				if (GL is Farm)
+				{
+					Farm farm = (Farm)GL;
+					AddMineObjs(farm);
+				}
+			}
+		}
+
+		List<Vector2> MineArea;
+		private void AddMineObjs(Farm farm)
+		{
+			// Create Mine Area if needed
+			if (MineArea == null)
+			{
+				MineArea = new List<Vector2>();
+				for (int x = modConfig.Mine_StartX; x <= modConfig.Mine_EndX; x++)
+				{
+					for (int y = modConfig.Mine_StartY; y <= modConfig.Mine_EndY; y++)
+					{
+						MineArea.Add(new Vector2(x, y));
+					}
+				}
+			}
+
+			
+			foreach (Vector2 tile in modConfig.BoulderArea)
+			{
+				ClearResourceClump(ref farm.resourceClumps, tile);
+				farm.addResourceClumpAndRemoveUnderlyingTerrain(ResourceClump.boulderIndex, 2, 2, tile);
+			}
+
+			// Mine Area
+			if (modConfig.AddMineArea)
+			{
+				Random randomGen = new Random();
+				foreach (Vector2 tile in MineArea)
+				{
+					//calculate ore spawn
+					if (Game1.player.hasSkullKey)
+					{
+						//5% chance of spawn ore
+						if (randomGen.NextDouble() < modConfig.oreChance)
+						{
+							addRandomOre(ref farm, ref randomGen, 4, tile);
+							continue;
+						}
+					}
+					else
+					{
+						//check mine level
+						if (Game1.player.deepestMineLevel > 80) //gold level
+						{
+							if (randomGen.NextDouble() < modConfig.oreChance)
+							{
+								addRandomOre(ref farm, ref randomGen, 3, tile);
+								continue;
+							}
+						}
+						else if (Game1.player.deepestMineLevel > 40) //iron level
+						{
+							if (randomGen.NextDouble() < modConfig.oreChance)
+							{
+								addRandomOre(ref farm, ref randomGen, 2, tile);
+								continue;
+							}
+						}
+						else
+						{
+							if (randomGen.NextDouble() < modConfig.oreChance)
+							{
+								addRandomOre(ref farm, ref randomGen, 1, tile);
+								continue;
+							}
+						}
+					}
+
+					//if ore doesnt spawn then calculate gem spawn
+					//1% to spawn gem
+					if (randomGen.NextDouble() < modConfig.gemChance)
+					{
+						//0.1% chance of getting mystic stone
+						if (Game1.player.hasSkullKey)
+							if (randomGen.Next(0, 100) < 1)
+							{
+								farm.setObject(tile, createOre("mysticStone", tile));
+								continue;
+							}
+							else
+							if (randomGen.Next(0, 500) < 1)
+							{
+								farm.setObject(tile, createOre("mysticStone", tile));
+								continue;
+							}
+
+						switch (randomGen.Next(0, 100) % 8)
+						{
+							case 0: farm.setObject(tile, createOre("gemStone", tile)); break;
+							case 1: farm.setObject(tile, createOre("diamond", tile)); break;
+							case 2: farm.setObject(tile, createOre("ruby", tile)); break;
+							case 3: farm.setObject(tile, createOre("jade", tile)); break;
+							case 4: farm.setObject(tile, createOre("amethyst", tile)); break;
+							case 5: farm.setObject(tile, createOre("topaz", tile)); break;
+							case 6: farm.setObject(tile, createOre("emerald", tile)); break;
+							case 7: farm.setObject(tile, createOre("aquamarine", tile)); break;
+							default: break;
+						}
+						continue;
+					}
+				}
+			}
+		}
+		static void ClearResourceClump(ref List<ResourceClump> input, Vector2 RCLocation)
+		{
+			for (int i = 0; i < input.Count; i++)
+			{
+				ResourceClump RC = input[i];
+				if (RC.tile == RCLocation)
+				{
+					input.RemoveAt(i);
+					i--;
+				}
+			}
+		}
+		static void addRandomOre(ref Farm input, ref Random randomGen, int highestOreLevel, Vector2 tileLocation)
+		{
+			switch (randomGen.Next(0, 100) % highestOreLevel)
+			{
+				case 0: input.setObject(tileLocation, createOre("copperStone", tileLocation)); break;
+				case 1: input.setObject(tileLocation, createOre("ironStone", tileLocation)); break;
+				case 2: input.setObject(tileLocation, createOre("goldStone", tileLocation)); break;
+				case 3: input.setObject(tileLocation, createOre("iridiumStone", tileLocation)); break;
+				default: break;
+			}
+		}
+		static StardewValley.Object createOre(string oreName, Vector2 tileLocation)
+		{
+			switch (oreName)
+			{
+				case "mysticStone":
+					return new StardewValley.Object(tileLocation, 46, "Stone", true, false, false, false);
+				case "gemStone":
+					return new StardewValley.Object(tileLocation, (Game1.random.Next(7) + 1) * 2, "Stone", true, false, false, false);
+				case "diamond":
+					return new StardewValley.Object(tileLocation, 2, "Stone", true, false, false, false);
+				case "ruby":
+					return new StardewValley.Object(tileLocation, 4, "Stone", true, false, false, false);
+				case "jade":
+					return new StardewValley.Object(tileLocation, 6, "Stone", true, false, false, false);
+				case "amethyst":
+					return new StardewValley.Object(tileLocation, 8, "Stone", true, false, false, false);
+				case "topaz":
+					return new StardewValley.Object(tileLocation, 10, "Stone", true, false, false, false);
+				case "emerald":
+					return new StardewValley.Object(tileLocation, 12, "Stone", true, false, false, false);
+				case "aquamarine":
+					return new StardewValley.Object(tileLocation, 14, "Stone", true, false, false, false);
+				case "iridiumStone":
+					return new StardewValley.Object(tileLocation, 765, 1);
+				case "goldStone":
+					return new StardewValley.Object(tileLocation, 764, 1);
+				case "ironStone":
+					return new StardewValley.Object(tileLocation, 290, 1);
+				case "copperStone":
+					return new StardewValley.Object(tileLocation, 751, 1);
+				default:
+					return null;
+			}
+		}
+
 	}
 }
  
