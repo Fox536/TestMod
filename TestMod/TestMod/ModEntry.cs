@@ -190,6 +190,8 @@ namespace TestMod
 				// Prevent Another Update
 				mapUpdated = true;
 			}
+
+			AddFarmExpansion();
 		}
 
 		// Tree Sectors
@@ -595,6 +597,70 @@ namespace TestMod
 				default:
 					return null;
 			}
+		}
+		#endregion
+
+		#region FarmExpansionPatch
+		private void AddFarmExpansion()
+		{
+			bool isLoaded = !this.Helper.ModRegistry.IsLoaded("Advize.FarmExpansion");
+			print("Mod loaded: " + isLoaded.ToString());
+
+			if (!isLoaded)
+				return;
+
+			if (!modConfig.UsingFarmExpansionPatch)
+				return;
+
+			print("Loading FarmExpansionPatch");
+
+			int tsID = 0;
+			List<Tile> tiles = new List<Tile>();
+
+			tiles.Add(new Tile(TLayer.Back, 2, 33, 346, tsID)); tiles.Add(new Tile(TLayer.Back, 2, 34, 346, tsID)); tiles.Add(new Tile(TLayer.Back, 2, 35, 346, tsID));
+			tiles.Add(new Tile(TLayer.Back, 0, 38, 537, tsID)); tiles.Add(new Tile(TLayer.Back, 1, 38, 537, tsID)); tiles.Add(new Tile(TLayer.Back, 2, 38, 618, tsID));
+			tiles.Add(new Tile(TLayer.Back, 0, 39, 587, tsID)); tiles.Add(new Tile(TLayer.Back, 1, 39, 587, tsID)); tiles.Add(new Tile(TLayer.Back, 0, 41, 587, tsID));
+			tiles.Add(new Tile(TLayer.Back, 1, 41, 587, tsID)); tiles.Add(new Tile(TLayer.Back, 2, 41, 587, tsID));
+
+			tiles.Add(new Tile(TLayer.Buildings, 1, 33, 377, tsID)); tiles.Add(new Tile(TLayer.Buildings, 0, 34, 175, tsID)); tiles.Add(new Tile(TLayer.Buildings, 1, 34, 175, tsID));
+			tiles.Add(new Tile(TLayer.Buildings, 2, 34, 444, tsID)); tiles.Add(new Tile(TLayer.Buildings, 0, 35, 467, tsID)); tiles.Add(new Tile(TLayer.Buildings, 1, 35, 468, tsID));
+			tiles.Add(new Tile(TLayer.Buildings, 2, 35, 469, tsID)); tiles.Add(new Tile(TLayer.Buildings, 0, 36, 492, tsID)); tiles.Add(new Tile(TLayer.Buildings, 1, 36, 493, tsID));
+			tiles.Add(new Tile(TLayer.Buildings, 2, 36, 371, tsID)); tiles.Add(new Tile(TLayer.Buildings, 0, 37, 517, tsID)); tiles.Add(new Tile(TLayer.Buildings, 1, 37, 518, tsID));
+			tiles.Add(new Tile(TLayer.Buildings, 2, 37, 519, tsID)); tiles.Add(new Tile(TLayer.Buildings, 0, 38, 542, tsID)); tiles.Add(new Tile(TLayer.Buildings, 1, 38, 543, tsID));
+			tiles.Add(new Tile(TLayer.Buildings, 2, 38, 544, tsID)); tiles.Add(new Tile(TLayer.Buildings, 0, 39, -1, tsID)); tiles.Add(new Tile(TLayer.Buildings, 1, 39, -1, tsID));
+			tiles.Add(new Tile(TLayer.Buildings, 2, 39, -1, tsID)); tiles.Add(new Tile(TLayer.Buildings, 0, 40, -1, tsID)); tiles.Add(new Tile(TLayer.Buildings, 1, 40, -1, tsID));
+			tiles.Add(new Tile(TLayer.Buildings, 2, 40, -1, tsID)); tiles.Add(new Tile(TLayer.Buildings, 0, 41, -1, tsID)); tiles.Add(new Tile(TLayer.Buildings, 1, 41, -1, tsID));
+			tiles.Add(new Tile(TLayer.Buildings, 2, 41, -1, tsID));
+
+			tiles.Add(new Tile(TLayer.Front, 0, 35, -1, tsID)); tiles.Add(new Tile(TLayer.Front, 2, 36, 494, tsID));
+
+			tiles.Add(new Tile(TLayer.Back, 3, 39, 206, tsID));
+
+			// Finalize Edits
+			MapEditor.TreeArea.PatchMap(Game1.locations[1], tiles);
+
+			/*
+tiles.Add(new Tile(TileLayer.Back, 2, 33, 346, tsID)); tiles.Add(new Tile(TileLayer.Back, 2, 34, 346, tsID)); tiles.Add(new Tile(TileLayer.Back, 2, 35, 346, tsID));
+
+								tiles.Add(new Tile(TileLayer.Back, 0, 38, 537, tsID)); 
+								tiles.Add(new Tile(TileLayer.Back, 1, 38, 537, tsID)); 
+								tiles.Add(new Tile(TileLayer.Back, 2, 38, 618, tsID));
+								tiles.Add(new Tile(TileLayer.Back, 0, 39, 587, tsID)); 
+								tiles.Add(new Tile(TileLayer.Back, 1, 39, 587, tsID)); 
+								tiles.Add(new Tile(TileLayer.Back, 0, 41, 587, tsID));
+								tiles.Add(new Tile(TileLayer.Back, 1, 41, 587, tsID)); 
+								tiles.Add(new Tile(TileLayer.Back, 2, 41, 587, tsID));
+
+								tiles.Add(new Tile(TileLayer.Buildings, 1, 33, 377, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 0, 34, 175, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 1, 34, 175, tsID));
+								tiles.Add(new Tile(TileLayer.Buildings, 2, 34, 444, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 0, 35, 467, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 1, 35, 468, tsID));
+								tiles.Add(new Tile(TileLayer.Buildings, 2, 35, 469, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 0, 36, 492, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 1, 36, 493, tsID));
+								tiles.Add(new Tile(TileLayer.Buildings, 2, 36, 371, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 0, 37, 517, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 1, 37, 518, tsID));
+								tiles.Add(new Tile(TileLayer.Buildings, 2, 37, 519, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 0, 38, 542, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 1, 38, 543, tsID));
+								tiles.Add(new Tile(TileLayer.Buildings, 2, 38, 544, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 0, 39, -1, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 1, 39, -1, tsID));
+								tiles.Add(new Tile(TileLayer.Buildings, 2, 39, -1, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 0, 40, -1, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 1, 40, -1, tsID));
+								tiles.Add(new Tile(TileLayer.Buildings, 2, 40, -1, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 0, 41, -1, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 1, 41, -1, tsID));
+								tiles.Add(new Tile(TileLayer.Buildings, 2, 41, -1, tsID));
+			*/
 		}
 		#endregion
 

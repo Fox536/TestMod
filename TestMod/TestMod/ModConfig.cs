@@ -5,7 +5,7 @@ namespace TestMod
 {
 	class ModConfig
 	{
-		public bool debug			{ get; set; } = false;
+		public bool debug			{ get; set; } = true;
 		public bool AddTreeSector1	{ get; set; } = true;
 		public bool AddTreeSector2	{ get; set; } = true;
 		public bool AddTreeSector3	{ get; set; } = true;
@@ -25,6 +25,9 @@ namespace TestMod
 
 		public double oreChance { get; set; } = 0.05;
 		public double gemChance { get; set; } = 0.01;
+
+		public bool UsingFarmExpansionPatch { get; set; } = true;
+		public bool AddBothEntrances	{ get; set; } = false;
 
 		public List<Vector2> BoulderArea { get; set; } = new List<Vector2>() {
 			new Vector2( 13,  10),

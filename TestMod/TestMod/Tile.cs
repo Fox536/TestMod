@@ -15,5 +15,10 @@
 			this.l = l; this.x = x; this.y = y; this.tileIndex = tileIndex;
 			Layername = l.ToString();
 		}
+		public Tile(TLayer l, int x, int y, int tileIndex, int empty)
+		{
+			this.l = l; this.x = x; this.y = y; this.tileIndex = tileIndex;
+			Layername = l.ToString();
+		}
 	}
 }
