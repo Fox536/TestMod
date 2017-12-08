@@ -123,7 +123,10 @@ Layer
 			{
 				for (int y = 0; y < height * 3; y++)
 				{
-					AddNoSpawn(tileEdits, noSpawnArea, Game1.locations[1], startX + x, startY + y);
+					if ((x % 3 != 2) && (y % 3 != 2))
+					{
+						AddNoSpawn(tileEdits, noSpawnArea, Game1.locations[1], startX + x, startY + y);
+					}
 				}
 			}
 
