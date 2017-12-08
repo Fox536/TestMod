@@ -27,7 +27,7 @@ namespace TestMod
 		public double gemChance { get; set; } = 0.01;
 
 		public bool UsingFarmExpansionPatch { get; set; } = true;
-		public bool AddBothEntrances	{ get; set; } = false;
+		public bool AddBothEntrances	{ get; set; } = true;
 
 		public List<Vector2> BoulderArea { get; set; } = new List<Vector2>() {
 			new Vector2( 13,  10),

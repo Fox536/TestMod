@@ -603,7 +603,7 @@ namespace TestMod
 		#region FarmExpansionPatch
 		private void AddFarmExpansion()
 		{
-			bool isLoaded = !this.Helper.ModRegistry.IsLoaded("Advize.FarmExpansion");
+			bool isLoaded = this.Helper.ModRegistry.IsLoaded("Advize.FarmExpansion");
 			print("Mod loaded: " + isLoaded.ToString());
 
 			if (!isLoaded)
@@ -639,28 +639,94 @@ namespace TestMod
 			// Finalize Edits
 			MapEditor.TreeArea.PatchMap(Game1.locations[1], tiles);
 
-			/*
-tiles.Add(new Tile(TileLayer.Back, 2, 33, 346, tsID)); tiles.Add(new Tile(TileLayer.Back, 2, 34, 346, tsID)); tiles.Add(new Tile(TileLayer.Back, 2, 35, 346, tsID));
+			if (modConfig.AddBothEntrances)
+			{
+				GameLocation farmExpansion = null;
+				foreach (GameLocation location in Game1.locations)
+				{
+					if (location.Name == "FarmExpansion")
+					{
+						print("expansion found!!!");
+						farmExpansion = location;
+						break;
+					}
+				}
+				if (farmExpansion != null)
+				{
+					print("expansion edit start");
+					tiles = new List<Tile>();
 
-								tiles.Add(new Tile(TileLayer.Back, 0, 38, 537, tsID)); 
-								tiles.Add(new Tile(TileLayer.Back, 1, 38, 537, tsID)); 
-								tiles.Add(new Tile(TileLayer.Back, 2, 38, 618, tsID));
-								tiles.Add(new Tile(TileLayer.Back, 0, 39, 587, tsID)); 
-								tiles.Add(new Tile(TileLayer.Back, 1, 39, 587, tsID)); 
-								tiles.Add(new Tile(TileLayer.Back, 0, 41, 587, tsID));
-								tiles.Add(new Tile(TileLayer.Back, 1, 41, 587, tsID)); 
-								tiles.Add(new Tile(TileLayer.Back, 2, 41, 587, tsID));
+					tiles.Add(new Tile(TLayer.Back, 76, 49, 617, tsID));
+					tiles.Add(new Tile(TLayer.Back, 77, 49, 570, tsID));
+					tiles.Add(new Tile(TLayer.Back, 78, 49, 568, tsID));
+					tiles.Add(new Tile(TLayer.Back, 79, 49, 567, tsID));
 
-								tiles.Add(new Tile(TileLayer.Buildings, 1, 33, 377, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 0, 34, 175, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 1, 34, 175, tsID));
-								tiles.Add(new Tile(TileLayer.Buildings, 2, 34, 444, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 0, 35, 467, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 1, 35, 468, tsID));
-								tiles.Add(new Tile(TileLayer.Buildings, 2, 35, 469, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 0, 36, 492, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 1, 36, 493, tsID));
-								tiles.Add(new Tile(TileLayer.Buildings, 2, 36, 371, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 0, 37, 517, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 1, 37, 518, tsID));
-								tiles.Add(new Tile(TileLayer.Buildings, 2, 37, 519, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 0, 38, 542, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 1, 38, 543, tsID));
-								tiles.Add(new Tile(TileLayer.Buildings, 2, 38, 544, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 0, 39, -1, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 1, 39, -1, tsID));
-								tiles.Add(new Tile(TileLayer.Buildings, 2, 39, -1, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 0, 40, -1, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 1, 40, -1, tsID));
-								tiles.Add(new Tile(TileLayer.Buildings, 2, 40, -1, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 0, 41, -1, tsID)); tiles.Add(new Tile(TileLayer.Buildings, 1, 41, -1, tsID));
-								tiles.Add(new Tile(TileLayer.Buildings, 2, 41, -1, tsID));
-			*/
+					tiles.Add(new Tile(TLayer.Back, 76, 50, 433, tsID));
+					tiles.Add(new Tile(TLayer.Back, 77, 50, 433, tsID));
+					tiles.Add(new Tile(TLayer.Back, 78, 50, 433, tsID));
+					tiles.Add(new Tile(TLayer.Back, 79, 50, 433, tsID));
+
+					tiles.Add(new Tile(TLayer.Back, 76, 51, 616, tsID));
+					tiles.Add(new Tile(TLayer.Back, 77, 51, 745, tsID));
+					tiles.Add(new Tile(TLayer.Back, 78, 51, 745, tsID));
+					tiles.Add(new Tile(TLayer.Back, 79, 51, 745, tsID));
+
+					tiles.Add(new Tile(TLayer.Back, 77, 52, 683, tsID));
+					tiles.Add(new Tile(TLayer.Back, 78, 52, 684, tsID));
+					tiles.Add(new Tile(TLayer.Back, 79, 52, 684, tsID));
+
+
+					// Building Layer
+					tiles.Add(new Tile(TLayer.Buildings, 77, 48, 411, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, 78, 48, 358, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, 79, 48, 360, tsID));
+
+					tiles.Add(new Tile(TLayer.Buildings, 77, 49, 436, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, 78, 49, 383, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, 79, 49, 385, tsID));
+
+					tiles.Add(new Tile(TLayer.Buildings, 77, 50, -1, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, 78, 50, -1, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, 79, 50, -1, tsID));
+
+					tiles.Add(new Tile(TLayer.Buildings, 77, 51, -1, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, 78, 51, -1, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, 79, 51, -1, tsID));
+
+					tiles.Add(new Tile(TLayer.Buildings, 77, 52, 361, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, 78, 52, 358, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, 79, 52, 360, tsID));
+
+					tiles.Add(new Tile(TLayer.Buildings, 78, 53, 383, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, 79, 53, 385, tsID));
+
+					// Front
+					tiles.Add(new Tile(TLayer.Front, 78, 45, -1, tsID));
+					tiles.Add(new Tile(TLayer.Front, 79, 45, -1, tsID));
+					
+					tiles.Add(new Tile(TLayer.Front, 78, 46, -1, tsID));
+					tiles.Add(new Tile(TLayer.Front, 79, 46, -1, tsID));
+
+					tiles.Add(new Tile(TLayer.Front, 78, 47, -1, tsID));
+					tiles.Add(new Tile(TLayer.Front, 79, 47, -1, tsID));
+
+					tiles.Add(new Tile(TLayer.Front, 78, 48, -1, tsID));
+					tiles.Add(new Tile(TLayer.Front, 79, 48, -1, tsID));
+
+					// Finalize Edits
+					MapEditor.TreeArea.PatchMap(farmExpansion, tiles);
+
+					print("expansion edit finished");
+
+					Game1.locations[1].warps.Add(new Warp(1, 39, "FarmExpansion", 78, 50, false));
+					Game1.locations[1].warps.Add(new Warp(1, 40, "FarmExpansion", 78, 50, false));
+					Game1.locations[1].warps.Add(new Warp(1, 41, "FarmExpansion", 78, 50, false));
+
+					farmExpansion.warps.Add(new Warp(79, 50, "Farm", 2, 40, false));
+					farmExpansion.warps.Add(new Warp(79, 51, "Farm", 2, 40, false));
+				}
+			}
+
 		}
 		#endregion
 
