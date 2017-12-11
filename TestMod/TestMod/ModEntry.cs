@@ -126,13 +126,6 @@ namespace TestMod
 		/// </summary>
 		private void RunPatches()
 		{
-			if (Game1.locations[1] is Farm)
-			{
-				Farm farm = Game1.locations[1] as Farm;
-				farm.seasonUpdate(Game1.currentSeason);
-				farm.Map.TileSheets[2].ImageSource = Game1.currentSeason + "_outdoorsTileSheet";
-			}
-
 			if (!mapUpdated)
 			{
 				if (Game1.locations[1] is Farm)
@@ -151,10 +144,8 @@ namespace TestMod
 							print($"{farm.Map.TileSheets[i]}, {farm.Map.TileSheets[i].Id}, {farm.Map.TileSheets[i].ImageSource}");
 						}
 
-						farm.seasonUpdate(Game1.currentSeason);
-						//farm.Map.LoadTileSheets(Game1.mapDisplayDevice);
-						farm.Map.TileSheets[2].ImageSource = Game1.currentSeason + "_outdoorsTileSheet";
-						//farm.Map.TileSheets[1].ImageSource = Game1.currentSeason
+						// Update Seasonal Tileset
+						UpdateSeasonalTileset(farm);
 
 						print($"Adding Map Edits");
 
@@ -190,8 +181,8 @@ namespace TestMod
 
 						// Bridge Replacer
 						//ReplaceBridge(farm);
-
-						print($"Finished Adding Tree Sectors");
+						
+						print($"Finished Adding Map Edits");
 					}
 					
 					// Add Farm Expansion
@@ -201,6 +192,24 @@ namespace TestMod
 				// Prevent Another Update
 				mapUpdated = true;
 			}
+
+			if (Game1.locations[1] is Farm)
+			{
+				Farm farm = Game1.locations[1] as Farm;
+				UpdateSeasonalTileset(farm);
+			}
+		}
+
+		private void UpdateSeasonalTileset(GameLocation farm)
+		{
+			// Update Seasonal Tileset
+			//farm.seasonUpdate(Game1.currentSeason);
+			foreach (TileSheet tilesheet in farm.Map.TileSheets)
+			{
+				if (tilesheet.ImageSource.Contains("spring_outdoorsTileSheet"))
+					tilesheet.ImageSource= Game1.currentSeason + "_outdoorsTileSheet";
+			}
+			print(Game1.currentSeason + "_outdoorsTileSheet");
 		}
 
 		// Tree Sectors

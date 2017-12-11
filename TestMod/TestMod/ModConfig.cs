@@ -147,7 +147,7 @@ namespace TestMod
 		public Vector2 Warps_Backwoods			{ get; set; } = new Vector2(-1, -1);
 		public Vector2 Warps_Busstop			{ get; set; } = new Vector2(-1, -1);
 
-		public int FarmExpansionWidth			{ get; set; } = 80;
+		public int FarmExpansionWidth			{ get; set; } = 160;
 		public int FarmExpansionHeight			{ get; set; } = 80;
 	}
 
