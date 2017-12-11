@@ -9,6 +9,7 @@ using xTile.Tiles;
 using xTile;
 using StardewValley.TerrainFeatures;
 using Microsoft.Xna.Framework.Graphics;
+using StardewValley.Locations;
 
 namespace TestMod
 {
@@ -16,12 +17,11 @@ namespace TestMod
 	public class ModEntry : Mod //, IAssetEditor
 	{
 		#region Variables
-		private	static string			ModVersion = "0.04";
-		private static ModConfig		modConfig;
-		private static Map				FarmMap;
-		private static bool				mapUpdated = false;
-		private static IMonitor			ModMonitor;
-		private static List<Vector2>	MineArea;
+		private static string		ModVersion = "0.04";
+		private static ModConfig	modConfig;
+		private static Map			FarmMap;
+		private static bool			mapUpdated = false;
+		private static IMonitor		ModMonitor;
 		#endregion
 
 		/*********
@@ -37,7 +37,7 @@ namespace TestMod
             Game1.locations[1].warps.Add(new Warp(64, 19, "Farm", 62, 23, false));
             Game1.locations[1].setTileProperty(63, 13, "Buildings", "Action", "Warp 64 18 Farm");
             */
-            
+
 			// Add Events
 			SaveEvents.AfterLoad += SaveEvents_AfterLoad;
 			SaveEvents.AfterSave += SaveEvents_AfterSave;
@@ -100,10 +100,10 @@ namespace TestMod
 			{
 				// Create/Read Config
 				CreateConfig();
-
-				// Add Map Edits
-				RunPatches();
 			}
+
+			// Add Map Edits
+			RunPatches();
 
 			AddObjects();
 		}
@@ -120,7 +120,7 @@ namespace TestMod
 				// Write Config in case it's Needed
 				this.Helper.WriteJsonFile($"data/{Constants.SaveFolderName}.json", modConfig);
 		}
-		
+
 		/// <summary>
 		/// Adds the Map Edits
 		/// </summary>
@@ -137,66 +137,78 @@ namespace TestMod
 			{
 				if (Game1.locations[1] is Farm)
 				{
-					print("Starting Map Override");
 					Farm farm = Game1.locations[1] as Farm;
-					FarmMap = this.Helper.Content.Load<Map>(@"Content\Maps\Farm_Combat_Fox536.xnb", ContentSource.ModFolder);
-					farm.Map = FarmMap;
 
-					for (int i = 0; i < farm.Map.TileSheets.Count; i++)
+					// Insure that the player is using the correct Map
+					if (Game1.whichFarm == 4)
 					{
-						print($"{farm.Map.TileSheets[i]}, {farm.Map.TileSheets[i].Id}, {farm.Map.TileSheets[i].ImageSource}");
+						print("Starting Map Override");
+						FarmMap = this.Helper.Content.Load<Map>(@"Content\Maps\Farm_Combat_Fox536.xnb", ContentSource.ModFolder);
+						farm.Map = FarmMap;
+
+						for (int i = 0; i < farm.Map.TileSheets.Count; i++)
+						{
+							print($"{farm.Map.TileSheets[i]}, {farm.Map.TileSheets[i].Id}, {farm.Map.TileSheets[i].ImageSource}");
+						}
+
+						farm.seasonUpdate(Game1.currentSeason);
+						//farm.Map.LoadTileSheets(Game1.mapDisplayDevice);
+						farm.Map.TileSheets[2].ImageSource = Game1.currentSeason + "_outdoorsTileSheet";
+						//farm.Map.TileSheets[1].ImageSource = Game1.currentSeason
+
+						print($"Adding Map Edits");
+
+						if (modConfig.AddTreePlot1)
+							AddTreePlots1(farm);
+
+						if (modConfig.AddTreePlot2)
+							AddTreePlots2(farm);
+
+						if (modConfig.AddTreePlot3)
+							AddTreePlots3(farm);
+
+						if (modConfig.AddTreePlot4)
+							AddTreePlots4(farm);
+
+						if (modConfig.AddTreePlot5)
+							AddTreePlots5(farm);
+
+						if (modConfig.AddTreePlot6)
+							AddTreePlots6(farm);
+
+						if (modConfig.AddTreePlot7)
+							AddTreePlots7(farm);
+
+						if (modConfig.AddTreePlot8)
+							AddTreePlots8(farm);
+
+						if (modConfig.AddTreePlot9)
+							AddTreePlots9(farm);
+
+						if (modConfig.AddMineArea)
+							AddMine(farm);
+
+						// Bridge Replacer
+						//ReplaceBridge(farm);
+
+						print($"Finished Adding Tree Sectors");
 					}
-
-					farm.seasonUpdate(Game1.currentSeason);
-					//farm.Map.LoadTileSheets(Game1.mapDisplayDevice);
-					farm.Map.TileSheets[2].ImageSource = Game1.currentSeason + "_outdoorsTileSheet";
-					//farm.Map.TileSheets[1].ImageSource = Game1.currentSeason
-
-					print($"Adding Map Edits");
-
-					if (modConfig.AddTreeSector1)
-						AddSector1();
-
-					if (modConfig.AddTreeSector2)
-						AddSector2();
-
-					if (modConfig.AddTreeSector3)
-						AddSector3();
-
-					if (modConfig.AddTreeSector4)
-						AddSector4();
-
-					if (modConfig.AddTreeSector5)
-						AddSector5();
-
-					if (modConfig.AddTreeSector6)
-						AddSector6();
-
-					if (modConfig.AddTreeSector7)
-						AddSector7();
-
-					if (modConfig.AddTreeSector8)
-						AddSector8();
-
-					if (modConfig.AddTreeSector9)
-						AddSector9();
-
-					if (modConfig.AddMineArea)
-						AddMine();
 					
-					print($"Finished Adding Tree Sectors");
+					// Add Farm Expansion
+					AddFarmExpansion(farm);
 				}
 
 				// Prevent Another Update
 				mapUpdated = true;
 			}
-
-			AddFarmExpansion();
 		}
 
 		// Tree Sectors
-		#region TreeAreas
-		private void AddSector1()
+		#region TreePlots
+		/// <summary>
+		/// Adds the Tree Plot #1
+		/// </summary>
+		private void AddTreePlots1(Farm farm)
 		{
 			print($"Adding Sector 1");
 			// Variables
@@ -206,15 +218,15 @@ namespace TestMod
 			int height = 14;
 
 			// Normal Edits
-			MapEditor.TreeArea.FillSquareArea(startX, startY, width, height, true, false, false, false, false, false, false, false);
-			
+			MapEditor.TreeArea.FillSquareArea(farm, startX, startY, width, height, true, false, false, false, false, false, false, false);
+
 			// Custom Patch Needed for this sector
 			// Create Array
 			List<Tile> tileEdits = new List<Tile>();
 
 			// Fix Right Side
 			int rightSide = startX + width * 3;
-			for (int y = 0; y < height; y++)
+			for (int y = 0; y < height * 3; y++)
 			{
 				MapEditor.TreeArea.AddGrass(tileEdits, rightSide, startY + y);
 			}
@@ -222,250 +234,518 @@ namespace TestMod
 			MapEditor.TreeArea.AddTurnLeftBottom(tileEdits, 68, 115);
 
 			// Finalize Edits
-			MapEditor.TreeArea.PatchMap(Game1.locations[1], tileEdits);
+			MapEditor.TreeArea.PatchMap(farm, tileEdits);
 		}
-		private void AddSector2()
+		/// <summary>
+		/// Adds the Tree Plot #2
+		/// </summary>
+		private void AddTreePlots2(Farm farm)
 		{
 			print($"Adding Sector 2");
-			MapEditor.TreeArea.FillSquareArea(52, 80, 4, 11, true, true, true, true, true, true, true, true);
+			MapEditor.TreeArea.FillSquareArea(farm, 52, 80, 4, 11, true, true, true, true, true, true, true, true);
 		}
-		private void AddSector3()
+		/// <summary>
+		/// Adds the Tree Plot #3
+		/// </summary>
+		private void AddTreePlots3(Farm farm)
 		{
 			print($"Adding Sector 3");
-			MapEditor.TreeArea.FillSquareArea(43, 70, 5, 1, false, false, false, false, false, false, false, false);
+			MapEditor.TreeArea.FillSquareArea(farm, 43, 70, 5, 1, false, false, false, false, false, false, false, false);
 		}
-		private void AddSector4()
+		/// <summary>
+		/// Adds the Tree Plot #4
+		/// </summary>
+		private void AddTreePlots4(Farm farm)
 		{
 			print($"Adding Sector 4");
-			MapEditor.TreeArea.FillSquareArea(34, 61, 3, 3, false, false, false, false, false, false, false, false);
+			MapEditor.TreeArea.FillSquareArea(farm, 34, 61, 3, 3, false, false, false, false, false, false, false, false);
 		}
-		private void AddSector5()
+		/// <summary>
+		/// Adds the Tree Plot #5
+		/// </summary>
+		private void AddTreePlots5(Farm farm)
 		{
 			print($"Adding Sector 5");
-			MapEditor.TreeArea.FillSquareArea(19, 67, 3, 1, false, false, false, false, false, false, false, false);
+			MapEditor.TreeArea.FillSquareArea(farm, 19, 67, 3, 1, false, false, false, false, false, false, false, false);
 		}
-		private void AddSector6()
+		/// <summary>
+		/// Adds the Tree Plot #6
+		/// </summary>
+		private void AddTreePlots6(Farm farm)
 		{
 			print($"Adding Sector 6");
-			MapEditor.TreeArea.FillSquareArea(81, 25, 3, 1, false, false, false, false, false, false, false, false);
+			MapEditor.TreeArea.FillSquareArea(farm, 81, 25, 3, 1, false, false, false, false, false, false, false, false);
 		}
-		private void AddSector7()
+		/// <summary>
+		/// Adds the Tree Plot #7
+		/// </summary>
+		private void AddTreePlots7(Farm farm)
 		{
 			print($"Adding Sector 7");
-			MapEditor.TreeArea.FillSquareArea(103, 27, 3, 4, false, false, false, false, false, false, false, false);
-			MapEditor.TreeArea.FillSquareArea(112, 33, 1, 2, false, false, false, false, false, false, false, false);
+			MapEditor.TreeArea.FillSquareArea(farm, 103, 27, 3, 4, false, false, false, false, false, false, false, false);
+			MapEditor.TreeArea.FillSquareArea(farm, 112, 33, 1, 2, false, false, false, false, false, false, false, false);
 		}
-		private void AddSector8()
+		/// <summary>
+		/// Adds the Tree Plot #8
+		/// </summary>
+		private void AddTreePlots8(Farm farm)
 		{
 			print($"Adding Sector 8");
-			MapEditor.TreeArea.FillSquareArea(104, 111, 5, 1, false, false, false, false, false, false, false, false);
+			MapEditor.TreeArea.FillSquareArea(farm, 104, 111, 5, 1, false, false, false, false, false, false, false, false);
 		}
-		private void AddSector9()
+		/// <summary>
+		/// Adds the Tree Plot #9
+		/// </summary>
+		private void AddTreePlots9(Farm farm)
 		{
 			print($"Adding Sector 9");
-			MapEditor.TreeArea.FillSquareArea(70, 41, 1, 3, false, false, false, false, false, false, false, false);
+			MapEditor.TreeArea.FillSquareArea(farm, 70, 41, 1, 3, false, false, false, false, false, false, false, false);
 		}
 		#endregion
 		#region MineArea
-		private void AddMine()
+		/// <summary>
+		/// Patches the map, to add the secondary Mine Area.
+		/// </summary>
+		private void AddMine(Farm farm)
 		{
-			AddMineBack();
-			AddMineBuilding();
+			AddMineBack(farm);
+			AddMineBuilding(farm);
+			AddMineFront(farm);
 
-			int startX	= 5;
-			int startY	= 94;
-			int width	= 21;
-			int height	= 22;
-			
+			// Add NoSpawn to prevent Trees from spawning in the mine.
+			int startX = 5;
+			int startY = 94;
+			int width = 21;
+			int height = 22;
+
 			for (int x = 0; x < width; x++)
 			{
 				for (int y = 0; y < height; y++)
 				{
-					Game1.locations[1].setTileProperty(startX + x, startY + y, "Back", "NoSpawn", "Tree");
+					farm.setTileProperty(startX + x, startY + y, "Back", "NoSpawn", "Tree");
 				}
 			}
 
-			Game1.locations[1].setTileProperty(4, 97, "Back", "NPCBarrier", "T");
-			Game1.locations[1].setTileProperty(4, 97, "Back", "NoSpawn", "ALL");
-			
-			Game1.locations[1].setTileProperty(25, 116, "Back", "NPCBarrier", "T");
-			Game1.locations[1].setTileProperty(25, 116, "Back", "NoSpawn", "ALL");
+			// Add NoSpawn and NPC Barrier to Prevent issues around the mine.
+			farm.setTileProperty(4, 97, "Back", "NPCBarrier", "T");
+			farm.setTileProperty(4, 97, "Back", "NoSpawn", "ALL");
+
+			farm.setTileProperty(25, 116, "Back", "NPCBarrier", "T");
+			farm.setTileProperty(25, 116, "Back", "NoSpawn", "ALL");
 			for (int x = 0; x < width; x++)
 			{
-				Game1.locations[1].setTileProperty(4 + x, 116, "Back", "NPCBarrier", "T");
-				Game1.locations[1].setTileProperty(4 + x, 116, "Back", "NoSpawn", "ALL");
+				farm.setTileProperty(4 + x, 116, "Back", "NPCBarrier", "T");
+				farm.setTileProperty(4 + x, 116, "Back", "NoSpawn", "ALL");
 			}
 		}
-		private void AddMineBack()
+		/// <summary>
+		/// Patches the map to add the Back Layer of the Mine.
+		/// </summary>
+		private void AddMineBack(Farm farm)
 		{
 			List<Tile> tileEdits = new List<Tile>();
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 5, 94, 1, 3, 175, 0);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 5, 94, 1, 3, 175, TLayer.Back);
 
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 5, 114, 1, 2, 175, 0);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 6, 115, 1, 1, 175, 0);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 5, 114, 1, 2, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 6, 115, 1, 1, 175, TLayer.Back);
 
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 6, 94, 1, 1, 250, 0);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 6, 94, 1, 1, 250, TLayer.Back);
 
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 7, 94, 19, 1, 251, 0);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 6, 95, 20, 1, 175, 0);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 7, 94, 19, 1, 251, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 6, 95, 20, 1, 175, TLayer.Back);
 
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 26, 94, 1, 1, 252, 0);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 26, 95, 1, 20, 225, 0);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 26, 115, 1, 1, 250, 0);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 26, 94, 1, 1, 252, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 26, 95, 1, 20, 225, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 26, 115, 1, 1, 250, TLayer.Back);
 
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 6, 96, 7, 1, 175, 0);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 6, 96, 7, 1, 175, TLayer.Back);
 
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 18, 96, 8, 1, 175, 0);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 25, 97, 1, 19, 175, 0);
-			
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 18, 96, 8, 1, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 25, 97, 1, 19, 175, TLayer.Back);
+
 
 
 			// Stairs
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 13, 96, 1, 5, 339, 0);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 14, 96, 1, 5, 338, 0);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 15, 96, 1, 5, 339, 0);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 16, 96, 1, 5, 338, 0);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 17, 96, 1, 5, 339, 0);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 13, 96, 1, 5, 339, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 14, 96, 1, 5, 338, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 15, 96, 1, 5, 339, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 16, 96, 1, 5, 338, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 17, 96, 1, 5, 339, TLayer.Back);
 
 			// Grass (Beside Stairs
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 12, 97, 1, 3, 175, 0);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 18, 97, 1, 3, 175, 0);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 12, 97, 1, 3, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 18, 97, 1, 3, 175, TLayer.Back);
 
 			// Soil
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 5, 97,   7, 17, 680, 0);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 6, 114,  6,  1, 680, 0);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 7, 115, 18,  1, 680, 0);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 5, 97, 7, 17, 680, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 6, 114, 6, 1, 680, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 7, 115, 18, 1, 680, TLayer.Back);
 
-			
 
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 19, 97, 6, 18, 680, 0);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 12, 100, 7, 15, 680, 0);
+
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 19, 97, 6, 18, 680, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 12, 100, 7, 15, 680, TLayer.Back);
 
 			// Finalize Edits
-			MapEditor.TreeArea.PatchMap(Game1.locations[1], tileEdits);
+			MapEditor.TreeArea.PatchMap(farm, tileEdits);
 
 		}
-		private void AddMineBuilding()
+		/// <summary>
+		/// Patches the map to add the Building Layer of the Mine.
+		/// </summary>
+		private void AddMineBuilding(Farm farm)
 		{
 			List<Tile> tileEdits = new List<Tile>();
 
 			// Left Side
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  5,  97, 1,  1, 294, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 5, 97, 1, 1, 294, TLayer.Buildings);
 
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  5,   98, 1,  1, 319, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  5,   99, 1,  1, 344, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  5,  100, 1,  1, 369, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  5,  101, 1, 13, 364, TLayer.Buildings);
-
-			// Bottom
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  6, 114,  1,  1, 389, TLayer.Front);
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  7, 115,  1,  1, 390, TLayer.Front);
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  8, 115, 17,  1, 414, TLayer.Front);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 25, 115,  1,  1, 415, TLayer.Front);
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  6, 116, 20,  1, 175, TLayer.Front);
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  6, 115,  1,  1, 175, TLayer.Front);
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  5, 114,  1,  1, 175, TLayer.Front);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 5, 98, 1, 1, 319, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 5, 99, 1, 1, 344, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 5, 100, 1, 1, 369, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 5, 101, 1, 13, 364, TLayer.Buildings);
 
 			// Impassible Layer
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  4,  97,  1, 20, 175, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  5, 115,  2,  1, 175, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  7, 116, 19,  1, 175, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 4, 97, 1, 20, 175, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 5, 115, 2, 1, 175, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 7, 116, 19, 1, 175, TLayer.Buildings);
 
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  5, 114,  1,  1, 175, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 25, 115,  1,  1, 415, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 5, 114, 1, 1, 175, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 25, 115, 1, 1, 415, TLayer.Buildings);
 
 			// Top
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  6,  97, 1,  1, 295, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  6,  98, 1,  1, 320, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  6,  99, 1,  1, 345, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  6, 100, 1,  1, 370, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 6, 97, 1, 1, 295, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 6, 98, 1, 1, 320, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 6, 99, 1, 1, 345, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 6, 100, 1, 1, 370, TLayer.Buildings);
 
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  7,  97, 6,  1, 468, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  7,  98, 6,  1, 493, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  7,  99, 6,  1, 518, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits,  7, 100, 6,  1, 543, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 7, 97, 6, 1, 468, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 7, 98, 6, 1, 493, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 7, 99, 6, 1, 518, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 7, 100, 6, 1, 543, TLayer.Buildings);
 
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 13,  96, 1,  1, 444, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 13,  97, 1,  1, 469, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 13,  98, 1,  1, 494, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 13,  99, 1,  1, 519, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 13, 100, 1,  1, 544, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 13, 96, 1, 1, 444, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 13, 97, 1, 1, 469, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 13, 98, 1, 1, 494, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 13, 99, 1, 1, 519, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 13, 100, 1, 1, 544, TLayer.Buildings);
 
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 17,  96, 1,  1, 441, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 17,  97, 1,  1, 466, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 17,  98, 1,  1, 491, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 17,  99, 1,  1, 516, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 17, 100, 1,  1, 541, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 17, 96, 1, 1, 441, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 17, 97, 1, 1, 466, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 17, 98, 1, 1, 491, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 17, 99, 1, 1, 516, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 17, 100, 1, 1, 541, TLayer.Buildings);
 
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 18,  97, 1,  1, 467, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 18,  98, 1,  1, 492, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 18,  99, 1,  1, 517, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 18, 100, 1,  1, 542, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 18, 97, 1, 1, 467, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 18, 98, 1, 1, 492, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 18, 99, 1, 1, 517, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 18, 100, 1, 1, 542, TLayer.Buildings);
 
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 19,  97, 5,  1, 468, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 19,  98, 5,  1, 493, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 19,  99, 5,  1, 518, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 19, 100, 5,  1, 543, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 19, 97, 5, 1, 468, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 19, 98, 5, 1, 493, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 19, 99, 5, 1, 518, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 19, 100, 5, 1, 543, TLayer.Buildings);
 
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 24,  97, 1,  1, 290, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 24,  98, 1,  1, 315, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 24,  99, 1,  1, 340, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 24, 100, 1,  1, 365, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 24, 97, 1, 1, 290, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 24, 98, 1, 1, 315, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 24, 99, 1, 1, 340, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 24, 100, 1, 1, 365, TLayer.Buildings);
 
 
 			// Right
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 25,  97, 1,  1, 291, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 25,  98, 1,  1, 316, TLayer.Buildings);
-			MapEditor.TreeArea.AddTileSquare(tileEdits, 25,  99, 1,  1, 341, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 25, 97, 1, 1, 291, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 25, 98, 1, 1, 316, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 25, 99, 1, 1, 341, TLayer.Buildings);
 			MapEditor.TreeArea.AddTileSquare(tileEdits, 25, 100, 1, 15, 366, TLayer.Buildings);
 
 
 			// Finalize Edits
-			MapEditor.TreeArea.PatchMap(Game1.locations[1], tileEdits);
+			MapEditor.TreeArea.PatchMap(farm, tileEdits);
+		}
+		/// <summary>
+		/// Patches the map to add the Front Layer of the Mine.
+		/// </summary>
+		private void AddMineFront(Farm farm)
+		{
+			List<Tile> tileEdits = new List<Tile>();
+
+			// Bottom
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 6, 114, 1, 1, 389, TLayer.Front);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 7, 115, 1, 1, 390, TLayer.Front);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 8, 115, 17, 1, 414, TLayer.Front);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 25, 115, 1, 1, 415, TLayer.Front);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 6, 116, 20, 1, 175, TLayer.Front);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 6, 115, 1, 1, 175, TLayer.Front);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 5, 114, 1, 1, 175, TLayer.Front);
+
+			// Finalize Edits
+			MapEditor.TreeArea.PatchMap(farm, tileEdits);
 		}
 		#endregion
-		#region Mine Methods
+		
+		// Not working yet...
+		// for some reason it causes passability issues
+		private void ReplaceBridge(Farm farm)
+		{
+			List<Tile> tileEdits = new List<Tile>();
+
+			// Layer - Back
+			// New Stuff
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 61, 56, 1, 1, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 62, 56, 1, 1, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 63, 56, 1, 1, 175, TLayer.Back);
+
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 59, 70, 1, 1, 175, TLayer.Back);
+
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 69, 60, 1, 1, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 69, 61, 1, 1, 175, TLayer.Back);
+
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 70, 71, 1, 1, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 74, 71, 1, 1, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 75, 72, 1, 1, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 76, 72, 1, 1, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 78, 72, 1, 1, 175, TLayer.Back);
+
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 70, 72, 1, 1, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 71, 72, 1, 1, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 72, 72, 1, 1, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 73, 72, 1, 1, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 74, 72, 1, 1, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 75, 72, 1, 1, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 76, 72, 1, 1, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 77, 72, 1, 1, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 78, 72, 1, 1, 175, TLayer.Back);
+
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 62, 71, 1, 1, 175, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 63, 71, 1, 1, 175, TLayer.Back);
+			
+			// Dirt - Left
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 64, 60, 1, 13, 225, TLayer.Back);
+
+			// Dirt - Middle
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 65, 60, 3, 11, 227, TLayer.Back);
+
+			// Dirt - Right
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 68, 60, 1, 11, 228, TLayer.Back);
+
+			// Grass Area
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 65, 54, 1, 1, 251, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 66, 54, 1, 1, 251, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 67, 54, 1, 1, 253, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 67, 53, 1, 1, 178, TLayer.Back);
+			
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 64, 55, 1, 5, 338, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 65, 55, 2, 5, 339, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 67, 55, 1, 5, 338, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 63, 60, 1, 1, 352, TLayer.Back);
+
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 65, 71, 1, 3, 338, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 66, 71, 2, 3, 339, TLayer.Back);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 68, 71, 1, 3, 338, TLayer.Back);
+
+
+			// Layer - Building
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 62, 56, 1, 1, -1, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 63, 56, 1, 1, -1, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 64, 61, 1, 9, -1, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 68, 61, 1, 9, -1, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 69, 68, 2, 2, -1, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 65, 73, 3, 1, -1, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 69, 71, 1, 3, -1, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 70, 72, 1, 9, -1, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 74, 71, 2, 1, -1, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 62, 71, 2, 1, -1, TLayer.Buildings);
+
+
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 62, 57, 2, 1, 468, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 62, 58, 2, 1, 493, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 62, 59, 2, 1, 518, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 62, 60, 2, 1, 543, TLayer.Buildings);
+
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 64, 55, 1, 1, 438, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 64, 56, 1, 1, 444, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 64, 57, 1, 1, 469, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 64, 58, 1, 1, 494, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 64, 59, 1, 1, 519, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 64, 60, 1, 1, 544, TLayer.Buildings);
+
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 67, 54, 1, 1, 439, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 67, 55, 1, 1, 416, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 67, 56, 1, 1, 441, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 67, 57, 1, 1, 466, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 67, 58, 1, 1, 491, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 67, 59, 1, 1, 516, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 67, 60, 1, 1, 541, TLayer.Buildings);
+
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 68, 54, 1, 1, 369, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 68, 55, 1, 1, 369, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 68, 56, 1, 1, 444, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 68, 57, 1, 1, 469, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 68, 58, 1, 1, 494, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 68, 59, 1, 1, 519, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 68, 60, 1, 1, 544, TLayer.Buildings);
+
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 58, 70, 1, 1, 412, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 59, 70, 5, 1, 413, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 64, 70, 1, 1, 438, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 64, 71, 1, 3, 419, TLayer.Buildings);
+
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 68, 70,  1, 1, 439, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 68, 71,  1, 3, 416, TLayer.Buildings);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 69, 70, 10, 1, 413, TLayer.Buildings);
+			
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 79, 71,  1, 2, 419, TLayer.Buildings);
+			
+			// Layer - Front
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 64, 72, 1, 1,  -1, TLayer.Front);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 68, 72, 1, 1,  -1, TLayer.Front);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 69, 69, 1, 1,  -1, TLayer.Front);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 79, 70, 1, 1, 438, TLayer.Front);
+
+			// Layer - AlwaysFront
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 64, 55, 1, 5, -1, TLayer.AlwaysFront);
+			MapEditor.TreeArea.AddTileSquare(tileEdits, 68, 55, 1, 5, -1, TLayer.AlwaysFront);
+
+
+			// Finalize Edits
+			MapEditor.TreeArea.PatchMap(farm, tileEdits);
+
+			// Add Passable Edits
+
+			for (int y = 0; y < 9; y++)
+			{
+				farm.setTileProperty(64, 61 + y, "Back", "Passable", "T");
+				farm.setTileProperty(68, 61 + y, "Back", "Passable", "T");
+			}
+			farm.setTileProperty(69, 68, "Back", "Passable", "T");
+			farm.setTileProperty(70, 68, "Back", "Passable", "T");
+			farm.setTileProperty(69, 69, "Back", "Passable", "T");
+			farm.setTileProperty(70, 69, "Back", "Passable", "T");
+
+		}
+
+		#region Daily Spawns
 		/// <summary>
 		/// Adds Spawnable Objects
 		/// </summary>
 		private void AddObjects()
 		{
-			foreach (GameLocation GL in Game1.locations)
+			Farm farm = (Farm)Game1.locations[1];
+			if (modConfig.doSpawnOre)
+				AddMineObjs(farm);
+
+			if (modConfig.doSpawnBoulders)
+				SpawnBoulders(farm);
+
+			if (modConfig.doSpawnTrees)
+				SpawnTrees(farm);
+
+			if (modConfig.doSpawnStumps)
+				SpawnStumps(farm);
+
+			if (modConfig.doSpawnLogs)
+				SpawnLogs(farm);
+		}
+
+		private void SpawnBoulders(Farm farm)
+		{
+			foreach (Vector2 point in modConfig.BoulderLocations)
 			{
-				if (GL is Farm)
-				{
-					Farm farm = (Farm)GL;
-					AddMineObjs(farm);
-				}
+				SpawnBoulder(farm, point);
 			}
 		}
+		private void SpawnBoulder(Farm farm, Vector2 point)
+		{
+			ClearResourceClump(ref farm.resourceClumps, point);
+			farm.addResourceClumpAndRemoveUnderlyingTerrain(ResourceClump.boulderIndex, 2, 2, point);
+		}
+
+		private void SpawnTrees(Farm farm)
+		{
+			// Add Config Option Here
+			foreach (Vector2 point in modConfig.TreeLocations)
+			{
+				SpawnTree(farm, point);
+			}
+		}
+		private void SpawnTree(Farm farm, Vector2 point)
+		{
+			StardewValley.TerrainFeatures.Tree t = new Tree(1, 5);
+			t.seasonUpdate(true);
+			ClearResourceClump(ref farm.resourceClumps, point);
+			TerrainFeature feature = null;
+			if (farm.terrainFeatures.TryGetValue(point, out feature))
+			{
+				if (feature.GetType() != t.GetType())
+				{
+					farm.terrainFeatures.Clear();
+					farm.terrainFeatures.Add(point, t);
+				}
+			}
+			else
+				farm.terrainFeatures.Add(point, t);
+		}
+
+		private void SpawnLogs(Farm farm)
+		{
+			foreach (Vector2 point in modConfig.LogLocations)
+			{
+				SpawnLog(farm, point);
+			}
+		}
+		private void SpawnLog(Farm farm, Vector2 point)
+		{
+			ClearResourceClump(ref farm.resourceClumps, point);
+			farm.addResourceClumpAndRemoveUnderlyingTerrain(ResourceClump.hollowLogIndex, 2, 2, point);
+		}
+
+		private void SpawnStumps(Farm farm)
+		{
+			foreach (Vector2 point in modConfig.StumpLocations)
+			{
+				SpawnStump(farm, point);
+			}
+		}
+		private void SpawnStump(Farm farm, Vector2 point)
+		{
+			ClearResourceClump(ref farm.resourceClumps, point);
+			farm.addResourceClumpAndRemoveUnderlyingTerrain(ResourceClump.stumpIndex, 2, 2, point);
+		}
+		
+		private void SpawnGrassPoints(Farm farm)
+		{
+			foreach (Vector2 point in modConfig.GetGrassArea())
+			{
+				SpawnGrass(farm, point);
+			}
+		}
+		private void SpawnGrass(Farm farm, Vector2 point)
+		{
+			TerrainFeature check;
+			if (farm.terrainFeatures.TryGetValue(point, out check))
+			{
+				if (check is Grass)
+				{
+					((Grass)check).numberOfWeeds = 4;
+				}
+			}
+			else
+			{
+				farm.terrainFeatures.Add(point, new Grass(Grass.springGrass, 4));
+			}
+
+		}
+		#endregion
+
+		#region Mine Methods
 		private void AddMineObjs(Farm farm)
 		{
 			// Create Mine Area if needed
-			if (MineArea == null)
-			{
-				MineArea = new List<Vector2>();
-				for (int x = modConfig.Mine_StartX; x <= modConfig.Mine_EndX; x++)
-				{
-					for (int y = modConfig.Mine_StartY; y <= modConfig.Mine_EndY; y++)
-					{
-						MineArea.Add(new Vector2(x, y));
-					}
-				}
-			}
-
-			
-			foreach (Vector2 tile in modConfig.BoulderArea)
-			{
-				ClearResourceClump(ref farm.resourceClumps, tile);
-				farm.addResourceClumpAndRemoveUnderlyingTerrain(ResourceClump.boulderIndex, 2, 2, tile);
-			}
-
 			// Mine Area
 			if (modConfig.AddMineArea)
 			{
 				Random randomGen = new Random();
-				foreach (Vector2 tile in MineArea)
+				foreach (Vector2 tile in modConfig.GetMineArea())
 				{
 					//calculate ore spawn
 					if (Game1.player.hasSkullKey)
@@ -601,7 +881,7 @@ namespace TestMod
 		#endregion
 
 		#region FarmExpansionPatch
-		private void AddFarmExpansion()
+		private void AddFarmExpansion(Farm farm)
 		{
 			bool isLoaded = this.Helper.ModRegistry.IsLoaded("Advize.FarmExpansion");
 			print("Mod loaded: " + isLoaded.ToString());
@@ -637,7 +917,7 @@ namespace TestMod
 			tiles.Add(new Tile(TLayer.Back, 3, 39, 206, tsID));
 
 			// Finalize Edits
-			MapEditor.TreeArea.PatchMap(Game1.locations[1], tiles);
+			MapEditor.TreeArea.PatchMap(farm, tiles);
 
 			if (modConfig.AddBothEntrances)
 			{
@@ -656,80 +936,143 @@ namespace TestMod
 					print("expansion edit start");
 					tiles = new List<Tile>();
 
-					tiles.Add(new Tile(TLayer.Back, 76, 49, 617, tsID));
-					tiles.Add(new Tile(TLayer.Back, 77, 49, 570, tsID));
-					tiles.Add(new Tile(TLayer.Back, 78, 49, 568, tsID));
-					tiles.Add(new Tile(TLayer.Back, 79, 49, 567, tsID));
+					int width  = modConfig.FarmExpansionWidth - 1;
+					int height = modConfig.FarmExpansionHeight - 1;
 
-					tiles.Add(new Tile(TLayer.Back, 76, 50, 433, tsID));
-					tiles.Add(new Tile(TLayer.Back, 77, 50, 433, tsID));
-					tiles.Add(new Tile(TLayer.Back, 78, 50, 433, tsID));
-					tiles.Add(new Tile(TLayer.Back, 79, 50, 433, tsID));
+					print($"width: {width}, height: {height}");
+					
+					tiles.Add(new Tile(TLayer.Back, width - 3, 49, 617, tsID));
+					tiles.Add(new Tile(TLayer.Back, width - 2, 49, 570, tsID));
+					tiles.Add(new Tile(TLayer.Back, width - 1, 49, 568, tsID));
+					tiles.Add(new Tile(TLayer.Back, width, 49, 567, tsID));
 
-					tiles.Add(new Tile(TLayer.Back, 76, 51, 616, tsID));
-					tiles.Add(new Tile(TLayer.Back, 77, 51, 745, tsID));
-					tiles.Add(new Tile(TLayer.Back, 78, 51, 745, tsID));
-					tiles.Add(new Tile(TLayer.Back, 79, 51, 745, tsID));
+					tiles.Add(new Tile(TLayer.Back, width - 3, 50, 433, tsID));
+					tiles.Add(new Tile(TLayer.Back, width - 2, 50, 433, tsID));
+					tiles.Add(new Tile(TLayer.Back, width - 1, 50, 433, tsID));
+					tiles.Add(new Tile(TLayer.Back, width, 50, 433, tsID));
 
-					tiles.Add(new Tile(TLayer.Back, 77, 52, 683, tsID));
-					tiles.Add(new Tile(TLayer.Back, 78, 52, 684, tsID));
-					tiles.Add(new Tile(TLayer.Back, 79, 52, 684, tsID));
+					tiles.Add(new Tile(TLayer.Back, width - 3, 51, 616, tsID));
+					tiles.Add(new Tile(TLayer.Back, width - 2, 51, 745, tsID));
+					tiles.Add(new Tile(TLayer.Back, width - 1, 51, 745, tsID));
+					tiles.Add(new Tile(TLayer.Back, width, 51, 745, tsID));
+
+					tiles.Add(new Tile(TLayer.Back, width - 2, 52, 683, tsID));
+					tiles.Add(new Tile(TLayer.Back, width - 1, 52, 684, tsID));
+					tiles.Add(new Tile(TLayer.Back, width, 52, 684, tsID));
 
 
 					// Building Layer
-					tiles.Add(new Tile(TLayer.Buildings, 77, 48, 411, tsID));
-					tiles.Add(new Tile(TLayer.Buildings, 78, 48, 358, tsID));
-					tiles.Add(new Tile(TLayer.Buildings, 79, 48, 360, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, width - 2, 48, 411, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, width - 1, 48, 358, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, width, 48, 360, tsID));
 
-					tiles.Add(new Tile(TLayer.Buildings, 77, 49, 436, tsID));
-					tiles.Add(new Tile(TLayer.Buildings, 78, 49, 383, tsID));
-					tiles.Add(new Tile(TLayer.Buildings, 79, 49, 385, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, width - 2, 49, 436, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, width - 1, 49, 383, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, width, 49, 385, tsID));
 
-					tiles.Add(new Tile(TLayer.Buildings, 77, 50, -1, tsID));
-					tiles.Add(new Tile(TLayer.Buildings, 78, 50, -1, tsID));
-					tiles.Add(new Tile(TLayer.Buildings, 79, 50, -1, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, width - 2, 50, -1, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, width - 1, 50, -1, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, width, 50, -1, tsID));
 
-					tiles.Add(new Tile(TLayer.Buildings, 77, 51, -1, tsID));
-					tiles.Add(new Tile(TLayer.Buildings, 78, 51, -1, tsID));
-					tiles.Add(new Tile(TLayer.Buildings, 79, 51, -1, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, width - 2, 51, -1, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, width - 1, 51, -1, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, width, 51, -1, tsID));
 
-					tiles.Add(new Tile(TLayer.Buildings, 77, 52, 361, tsID));
-					tiles.Add(new Tile(TLayer.Buildings, 78, 52, 358, tsID));
-					tiles.Add(new Tile(TLayer.Buildings, 79, 52, 360, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, width - 2, 52, 361, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, width - 1, 52, 358, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, width, 52, 360, tsID));
 
-					tiles.Add(new Tile(TLayer.Buildings, 78, 53, 383, tsID));
-					tiles.Add(new Tile(TLayer.Buildings, 79, 53, 385, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, width - 1, 53, 383, tsID));
+					tiles.Add(new Tile(TLayer.Buildings, width, 53, 385, tsID));
 
 					// Front
-					tiles.Add(new Tile(TLayer.Front, 78, 45, -1, tsID));
-					tiles.Add(new Tile(TLayer.Front, 79, 45, -1, tsID));
+					tiles.Add(new Tile(TLayer.Front, width - 1, 45, -1, tsID));
+					tiles.Add(new Tile(TLayer.Front, width, 45, -1, tsID));
 					
-					tiles.Add(new Tile(TLayer.Front, 78, 46, -1, tsID));
-					tiles.Add(new Tile(TLayer.Front, 79, 46, -1, tsID));
+					tiles.Add(new Tile(TLayer.Front, width - 1, 46, -1, tsID));
+					tiles.Add(new Tile(TLayer.Front, width, 46, -1, tsID));
 
-					tiles.Add(new Tile(TLayer.Front, 78, 47, -1, tsID));
-					tiles.Add(new Tile(TLayer.Front, 79, 47, -1, tsID));
+					tiles.Add(new Tile(TLayer.Front, width - 1, 47, -1, tsID));
+					tiles.Add(new Tile(TLayer.Front, width, 47, -1, tsID));
 
-					tiles.Add(new Tile(TLayer.Front, 78, 48, -1, tsID));
-					tiles.Add(new Tile(TLayer.Front, 79, 48, -1, tsID));
+					tiles.Add(new Tile(TLayer.Front, width - 1, 48, -1, tsID));
+					tiles.Add(new Tile(TLayer.Front, width, 48, -1, tsID));
 
 					// Finalize Edits
 					MapEditor.TreeArea.PatchMap(farmExpansion, tiles);
 
 					print("expansion edit finished");
 
-					Game1.locations[1].warps.Add(new Warp(1, 39, "FarmExpansion", 78, 50, false));
-					Game1.locations[1].warps.Add(new Warp(1, 40, "FarmExpansion", 78, 50, false));
-					Game1.locations[1].warps.Add(new Warp(1, 41, "FarmExpansion", 78, 50, false));
+					farm.warps.Add(new Warp(1, 39, "FarmExpansion", width - 1, 50, false));
+					farm.warps.Add(new Warp(1, 40, "FarmExpansion", width - 1, 50, false));
+					farm.warps.Add(new Warp(1, 41, "FarmExpansion", width - 1, 50, false));
 
-					farmExpansion.warps.Add(new Warp(79, 50, "Farm", 2, 40, false));
-					farmExpansion.warps.Add(new Warp(79, 51, "Farm", 2, 40, false));
+					farmExpansion.warps.Add(new Warp(width, 50, "Farm", 2, 40, false));
+					farmExpansion.warps.Add(new Warp(width, 51, "Farm", 2, 40, false));
 				}
 			}
 
 		}
 		#endregion
 
+		/// <summary>
+		/// Fix any Warp Points as needed
+		/// </summary>
+		static void ChangeWarpPoints()
+		{
+			foreach (GameLocation GL in Game1.locations)
+			{
+				if (modConfig.Warps_Forest.X != -1)
+				{
+					if (GL is Forest)
+					{
+						foreach (Warp w in GL.warps)
+						{
+							if (w.TargetName.ToLower().Contains("farm"))
+							{
+								w.TargetX = (int)modConfig.Warps_Forest.X;
+								w.TargetY = (int)modConfig.Warps_Forest.Y;
+							}
+						}
+					}
+				}
+
+				if (modConfig.Warps_Backwoods.X != -1)
+				{
+					if (GL.name.ToLower().Contains("backwood"))
+					{
+						foreach (Warp w in GL.warps)
+						{
+							if (w.TargetName.ToLower().Contains("farm"))
+							{
+								w.TargetX = (int)modConfig.Warps_Backwoods.X;
+								w.TargetY = (int)modConfig.Warps_Backwoods.Y;
+							}
+						}
+					}
+				}
+
+				if (modConfig.Warps_Busstop.X != -1)
+				{
+					if (GL.name.ToLower().Contains("busstop"))
+					{
+						foreach (Warp w in GL.warps)
+						{
+							if (w.TargetName.ToLower().Contains("farm"))
+							{
+								w.TargetX = (int)modConfig.Warps_Busstop.X;
+								w.TargetY = (int)modConfig.Warps_Busstop.Y;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		/// <summary>
+		/// Debug Print, requires modConfig.debug to equal true.
+		/// </summary>
+		/// <param name="text">Text to print.</param>
 		private static void print(string text)
 		{
 			if ((ModMonitor != null) && (modConfig.debug))

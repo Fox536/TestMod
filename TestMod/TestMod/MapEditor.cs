@@ -36,6 +36,20 @@ Layer
 			tileList.Add(new Tile(TLayer.Back, startX + 1, startY + 2, 251));
 			tileList.Add(new Tile(TLayer.Back, startX + 2, startY + 2, 253));
 		}
+		public static void AddCenter_NoSpawn(List<Tile> tileList, List<int[]> noSpawnArea, int startX, int startY)
+		{
+			noSpawnArea.Add(new int[] { startX,		startY });
+			noSpawnArea.Add(new int[] { startX + 1, startY });
+			noSpawnArea.Add(new int[] { startX + 2, startY });
+
+			noSpawnArea.Add(new int[] { startX,		startY + 1 });
+			//
+			noSpawnArea.Add(new int[] { startX + 2, startY + 1});
+
+			noSpawnArea.Add(new int[] { startX,		startY + 2 });
+			noSpawnArea.Add(new int[] { startX + 1, startY + 2 });
+			noSpawnArea.Add(new int[] { startX + 2, startY + 2 });
+		}
 
 		// Sidding
 		public static void AddLeftSide(List<Tile> tileList, int startX, int startY)
@@ -105,7 +119,7 @@ Layer
 			//gl.setTileProperty(startX, startY, "Back", "NoSpawn", "All");
 		}
 
-		public static void FillSquareArea(int startX, int startY, int width, int height, bool left, bool right, bool top, bool bottom, bool topLeft, bool topRight, bool bottomLeft, bool bottomRight)
+		public static void FillSquareArea(GameLocation location, int startX, int startY, int width, int height, bool left, bool right, bool top, bool bottom, bool topLeft, bool topRight, bool bottomLeft, bool bottomRight)
 		{
 			// Create Arrays
 			List<Tile> tileEdits = new List<Tile>();
@@ -119,6 +133,7 @@ Layer
 			// Main Area
 			//--------------------------------------------------------------------------
 			// Modding - Add TileData Changes
+			/*
 			for (int x = 0; x < width * 3; x++)
 			{
 				for (int y = 0; y < height * 3; y++)
@@ -129,6 +144,7 @@ Layer
 					}
 				}
 			}
+			*/
 
 			// Modding - Add TileId Changes
 			for (int x = 0; x < width; x++)
@@ -136,6 +152,7 @@ Layer
 				for (int y = 0; y < height; y++)
 				{
 					AddCenter(tileEdits, startX + x * 3, startY + y * 3);
+					AddCenter_NoSpawn(tileEdits, noSpawnArea, startX + x * 3, startY + y * 3);
 				}
 			}
 			//--------------------------------------------------------------------------
@@ -217,35 +234,35 @@ Layer
 			//--------------------------------------------------------------------------
 			
 			// Finalize Edits
-			PatchMap(Game1.locations[1], tileEdits);
+			PatchMap(location, tileEdits);
 
-			for (int i = 0; i < noSpawnArea.Count; i++)
+			foreach (int[] point in noSpawnArea)
 			{
-				int x = noSpawnArea[i][0];
-				int y = noSpawnArea[i][1];
-				Game1.locations[1].setTileProperty(x, y, "Back", "NoSpawn", "All");
+				int x = point[0];
+				int y = point[1];
+				location.setTileProperty(x, y, "Back", "NoSpawn", "All");
 			}
 		}
 
-		public static void PatchMap(GameLocation gl, List<Tile> tileArray)
+		public static void PatchMap(GameLocation location, List<Tile> tileArray)
 		{
 			foreach (Tile tile in tileArray)
 			{
-				Layer layer = gl.map.GetLayer(tile.Layername);
+				Layer layer = location.map.GetLayer(tile.Layername);
 
 				if (tile.tileIndex < 0)
 				{
-					gl.removeTile(tile.x, tile.y, tile.Layername);
+					location.removeTile(tile.x, tile.y, tile.Layername);
 					continue;
 				}
 
 				if (layer.Tiles[tile.x, tile.y] == null)
 				{
-					layer.Tiles[tile.x, tile.y] = new StaticTile(layer, gl.map.TileSheets[gl.map.TileSheets.Count-1], xTile.Tiles.BlendMode.Alpha, tile.tileIndex);
+					layer.Tiles[tile.x, tile.y] = new StaticTile(layer, location.map.TileSheets[location.map.TileSheets.Count-1], xTile.Tiles.BlendMode.Alpha, tile.tileIndex);
 				}
 				else
 				{
-					gl.setMapTileIndex(tile.x, tile.y, tile.tileIndex, layer.Id);
+					location.setMapTileIndex(tile.x, tile.y, tile.tileIndex, layer.Id);
 				}
 			}
 		}
