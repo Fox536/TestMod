@@ -654,6 +654,9 @@ namespace TestMod
 
 			if (modConfig.doSpawnLogs)
 				SpawnLogs(farm);
+
+			if (modConfig.doSpawnGrass)
+				SpawnGrassPoints(farm);
 		}
 
 		private void SpawnBoulders(Farm farm)
