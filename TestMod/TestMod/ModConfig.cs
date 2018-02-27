@@ -25,6 +25,7 @@ namespace TestMod
 		// Mine Area
 		public bool AddMineArea					{ get; set; } = true;
 		public bool doSpawnOre					{ get; set; } = true;
+		public bool OreUseMineLevel				{ get; set; } = true;
 		public List<Vector2[]> MineLocations	{ get; set; } = new List<Vector2[]>() {
 			new Vector2[] {new Vector2( 6, 101), new Vector2( 24, 112) },
 			new Vector2[] {new Vector2(89,   3), new Vector2( 96,   7) },

@@ -183,10 +183,11 @@ namespace TestMod
 						//ReplaceBridge(farm);
 						
 						print($"Finished Adding Map Edits");
+
+						// Add Farm Expansion
+						AddFarmExpansion(farm);
 					}
 					
-					// Add Farm Expansion
-					AddFarmExpansion(farm);
 				}
 
 				// Prevent Another Update
@@ -198,6 +199,8 @@ namespace TestMod
 				Farm farm = Game1.locations[1] as Farm;
 				UpdateSeasonalTileset(farm);
 			}
+
+			ChangeWarpPoints();
 		}
 
 		private void UpdateSeasonalTileset(GameLocation farm)
@@ -752,17 +755,25 @@ namespace TestMod
 		#region Mine Methods
 		private void AddMineObjs(Farm farm)
 		{
+			print("adding mine objs");
 			// Create Mine Area if needed
 			// Mine Area
-			if (modConfig.AddMineArea)
-			{
+			//if (modConfig.AddMineArea)
+			//{
 				Random randomGen = new Random();
 				foreach (Vector2 tile in modConfig.GetMineArea())
 				{
-					//calculate ore spawn
-					if (Game1.player.hasSkullKey)
+					if (!modConfig.OreUseMineLevel)
 					{
-						//5% chance of spawn ore
+						if (randomGen.NextDouble() < modConfig.oreChance)
+						{
+							addRandomOre(ref farm, ref randomGen, 4, tile);
+							continue;
+						}
+					}
+					//calculate ore spawn
+					else if (Game1.player.hasSkullKey)
+					{
 						if (randomGen.NextDouble() < modConfig.oreChance)
 						{
 							addRandomOre(ref farm, ref randomGen, 4, tile);
@@ -802,15 +813,21 @@ namespace TestMod
 					//1% to spawn gem
 					if (randomGen.NextDouble() < modConfig.gemChance)
 					{
-						//0.1% chance of getting mystic stone
-						if (Game1.player.hasSkullKey)
-							if (randomGen.Next(0, 100) < 1)
+						if (!modConfig.OreUseMineLevel)
+						{
+							if (randomGen.Next(0, 100) < 10)
 							{
 								farm.setObject(tile, createOre("mysticStone", tile));
 								continue;
 							}
-							else
-							if (randomGen.Next(0, 500) < 1)
+						}
+						else if (Game1.player.hasSkullKey)
+							if (randomGen.Next(0, 100) < 10)
+							{
+								farm.setObject(tile, createOre("mysticStone", tile));
+								continue;
+							}
+							else if (randomGen.Next(0, 500) < 1)
 							{
 								farm.setObject(tile, createOre("mysticStone", tile));
 								continue;
@@ -831,7 +848,7 @@ namespace TestMod
 						continue;
 					}
 				}
-			}
+			//}
 		}
 		static void ClearResourceClump(ref List<ResourceClump> input, Vector2 RCLocation)
 		{
